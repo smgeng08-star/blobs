@@ -1,6 +1,6 @@
 (function(wHandle, wjQuery) {
     /*global navigator, Image, $*/
-    var CONNECTION_URL = "127.0.0.1:3001"; // Default Connection IP
+    var CONNECTION_URL = ""; // Default to window.location.host
     var SKIN_URL = "./skins/"; // Skins Directory
     wHandle.setServer = function(arg) {
         if (arg != gameMode) {
