@@ -61,13 +61,16 @@ BotPlayer.prototype.update = function() {
     
     if (this.splitCooldown > 0) this.splitCooldown--;
     
-    // Always update center so viewReset is positioned on current bot
-    this.updateCenter();
-    this.visibleNodes = this.viewReset();
+    this.aiTick = (this.aiTick || 0) + 1;
+    if (this.aiTick % 2 === 0 || !this.visibleNodes || this.visibleNodes.length === 0) {
+        // Update center so viewReset is positioned on current bot
+        this.updateCenter();
+        this.visibleNodes = this.viewReset();
 
-    var cell = this.getLowestCell();
-    if (cell) {
-        this.decide(cell);
+        var cell = this.getLowestCell();
+        if (cell) {
+            this.decide(cell);
+        }
     }
 
     this.nodeDestroyQueue = [];

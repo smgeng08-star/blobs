@@ -1,4 +1,5 @@
 var Vector = require('../modules/Vector');
+var Rectangle = require('../modules/Rectangle');
 var Cell = require('./Cell');
 
 function PlayerCell() {
@@ -52,7 +53,6 @@ PlayerCell.prototype.move = function() {
 
 PlayerCell.prototype.eat = function() {
     var rangeSize = this.getSize() + 120;
-    var Rectangle = require('../modules/Rectangle');
     var queryBox = new Rectangle(this.position.x, this.position.y, rangeSize, rangeSize);
     var nearby = this.gameServer.quadTree.query(queryBox);
 

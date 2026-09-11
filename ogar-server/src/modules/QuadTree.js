@@ -125,13 +125,13 @@ QuadTree.prototype.clear = function() {
     this.branches = [];
 };
 
-QuadTree.prototype.query = function(range, predicate) {
-    var items = [];
+QuadTree.prototype.query = function(range, predicate, outItems) {
+    var items = outItems || [];
     var givenPredicate = predicate instanceof Function;
     if (this.branches.length > 0) {
         for (var b = 0; b < 4; b++) {
             if (this.branches[b].range.intersects(range)) {
-                items = items.concat(this.branches[b].query(range, predicate));
+                this.branches[b].query(range, predicate, items);
             }
         }
     } else {
