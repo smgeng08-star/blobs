@@ -182,18 +182,16 @@ PlayerTracker.prototype.update = function() {
     var nonVisibleNodes = []; // Nodes that are not visible anymore
     var removedNodeIds = new Set();
 
-    // 1. Process destroy queue: any node that was destroyed on server MUST be removed from client
+    // 1. Process destroy queue: any node destroyed on server is sent to client for removal
     for (var i = 0; i < this.nodeDestroyQueue.length; i++) {
         var dNode = this.nodeDestroyQueue[i];
         if (!dNode) continue;
         var dId = dNode.nodeId;
-        if (this.clientNodeMap[dId]) {
-            if (!removedNodeIds.has(dId)) {
-                nonVisibleNodes.push(dNode);
-                removedNodeIds.add(dId);
-            }
-            delete this.clientNodeMap[dId];
+        if (!removedNodeIds.has(dId)) {
+            nonVisibleNodes.push(dNode);
+            removedNodeIds.add(dId);
         }
+        delete this.clientNodeMap[dId];
     }
 
     // 2. Query visible nodes in viewport
@@ -202,18 +200,11 @@ PlayerTracker.prototype.update = function() {
 
     for (var i = 0; i < newNodes.length; i++) {
         var n = newNodes[i];
-        if (!n) continue;
+        if (!n || n.eaten) continue;
         var nId = n.nodeId;
         currentMap[nId] = n;
-
-        if (!this.clientNodeMap[nId]) {
-            // Newly entered view
-            updateNodes.push(n);
-            this.clientNodeMap[nId] = n;
-        } else if (n.sendUpdate()) {
-            // Already in view and changed/moving
-            updateNodes.push(n);
-        }
+        updateNodes.push(n);
+        this.clientNodeMap[nId] = n;
     }
 
     // 3. Find nodes that left viewport

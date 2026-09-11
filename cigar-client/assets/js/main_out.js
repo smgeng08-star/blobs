@@ -1172,6 +1172,13 @@
         } else {
             drawGrid();
         }
+        for (d = nodelist.length - 1; d >= 0; d--) {
+            var nlNode = nodelist[d];
+            if (!nlNode || nlNode.destroyed || (nlNode.updateTime && timestamp - nlNode.updateTime > 2500 && playerCells.indexOf(nlNode) === -1)) {
+                nodelist.splice(d, 1);
+                if (nlNode && nlNode.id) delete nodes[nlNode.id];
+            }
+        }
         nodelist.sort(function(a, b) {
             return a.size == b.size ? a.id - b.id : a.size - b.size;
         });
@@ -1180,7 +1187,6 @@
         ctx.scale(viewZoom, viewZoom);
         ctx.translate(-nodeX, -nodeY);
         drawSectors(ctx);
-        for (d = 0; d < Cells.length; d++) Cells[d].drawOneCell(ctx);
         for (d = 0; d < nodelist.length; d++) nodelist[d].drawOneCell(ctx);
         if (drawLine) {
             drawLineX = (3 * drawLineX + lineX) / 4;
