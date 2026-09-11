@@ -9,12 +9,14 @@ function EjectedMass() {
     this.addedAntiTeam = false; // Not to affect anti-teaming two times
     this.isMoving = true;
     this.firstTick = true;
+    this.ticksAlive = 0;
 }
 
 module.exports = EjectedMass;
 EjectedMass.prototype = new Cell();
 
 EjectedMass.prototype.moveEngineTick = function() {
+    this.ticksAlive++;
     if (this.firstTick) {
         this.firstTick = false;
         return;
@@ -37,9 +39,7 @@ EjectedMass.prototype.getSquareSize = function() {
 };
 
 EjectedMass.prototype.sendUpdate = function() {
-    // Only include in update packets while moving to avoid flooding network with stationary W pellets
-    if (this.moveEngine && this.moveEngine.distanceSq() > 0.5) return true;
-    return false;
+    return true;
 };
 
 EjectedMass.prototype.onRemove = function(gameServer) {
