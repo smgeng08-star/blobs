@@ -636,9 +636,9 @@
     }
     function handleWheel(event) {
         zoom *= Math.pow(.9, event.wheelDelta / -120 || event.detail || 0);
-        // Safe zoom boundaries to prevent canvas crashes and infinite loops
-        if (zoom < 0.25) zoom = 0.25;
-        if (zoom > 3.0) zoom = 3.0;
+        // Balanced zoom boundaries (no excessive zoom-out into void)
+        if (zoom < 0.55) zoom = 0.55;
+        if (zoom > 2.2) zoom = 2.2;
     }
     function buildQTree() {
         if (.4 > viewZoom) qTree = null;
@@ -1146,10 +1146,11 @@
     function calcViewZoom() {
         if (0 != playerCells.length) {
             for (var newViewZoom = 0, i = 0; i < playerCells.length; i++) newViewZoom += playerCells[i].size;
-            newViewZoom = Math.pow(Math.min(64 / newViewZoom, 1), .4) * viewRange();
+            // Authentic Agar.io zoom curve (0.32 power, min zoom capped at 0.42 to prevent tiny cells)
+            newViewZoom = Math.pow(Math.min(64 / newViewZoom, 1), 0.32) * viewRange();
             viewZoom = (9 * viewZoom + newViewZoom) / 10;
-            if (viewZoom < 0.05) viewZoom = 0.05;
-            if (viewZoom > 2.5) viewZoom = 2.5;
+            if (viewZoom < 0.42) viewZoom = 0.42;
+            if (viewZoom > 2.0) viewZoom = 2.0;
         }
     }
     function drawScene() {
@@ -1175,8 +1176,8 @@
             nodeY += (posY - nodeY) * lerpFactor;
             var targetZoom = (posSize || 1) * viewRange();
             viewZoom += (targetZoom - viewZoom) * lerpFactor;
-            if (viewZoom < 0.05) viewZoom = 0.05;
-            if (viewZoom > 2.5) viewZoom = 2.5;
+            if (viewZoom < 0.42) viewZoom = 0.42;
+            if (viewZoom > 2.0) viewZoom = 2.0;
         }
         buildQTree();
         mouseCoordChange();
