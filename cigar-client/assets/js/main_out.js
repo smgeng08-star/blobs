@@ -2030,15 +2030,7 @@
                     }
                     ctx.drawImage(skinImg, this.x - dw / 2, this.y - dh / 2, dw, dh);
                     ctx.restore();
-
-                    // Crisp, authentic cell border
-                    if (showCellBorder) {
-                        ctx.beginPath();
-                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
-                        ctx.lineWidth = Math.max(3, ~~(this.size * 0.04));
-                        ctx.strokeStyle = this.color || "#0284c7";
-                        ctx.stroke();
-                    }
+                    // Authentic Agar.io: No colored border on skins for a clean, borderless avatar
                 } else {
                     // No skin: fill with cell color and stroke
                     ctx.fillStyle = showColor ? "#FFF" : this.color;
