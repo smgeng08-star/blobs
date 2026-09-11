@@ -283,7 +283,7 @@
                         }
                     }
                     break;
-                case 87: // W key (Instant Rapid Macro Eject)
+                case 87: // W key (Macro Eject 80ms)
                     if (!isTyping && !hasOverlay) {
                         sendMouseMove();
                         sendUint8(21);
@@ -298,7 +298,7 @@
                                     clearInterval(wInterval);
                                     wInterval = null;
                                 }
-                            }, 25);
+                            }, 80);
                         }
                     }
                     break;
@@ -308,7 +308,7 @@
                         sendUint8(22);
                     }
                     break;
-                case 82: // R key (Minion Instant Rapid Macro Feed)
+                case 82: // R key (Minion Macro Feed 80ms)
                     if (!isTyping && !hasOverlay) {
                         sendMouseMove();
                         sendUint8(23);
@@ -323,7 +323,7 @@
                                     clearInterval(rInterval);
                                     rInterval = null;
                                 }
-                            }, 25);
+                            }, 80);
                         }
                     }
                     break;
