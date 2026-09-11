@@ -71,8 +71,8 @@ CollisionHandler.prototype.canEat = function(cell, check) {
     // Can't eat self
     if (cell.nodeId == check.nodeId) return false;
 
-    // Cannot eat/be eaten while in range of someone else
-    if (check.eaten || check.inRange || cell.eaten || cell.inRange) return false;
+    // Cannot eat if already eaten
+    if (check.eaten || cell.eaten) return false;
 
     // First check eating distance
     var dist = cell.position.sqDistanceTo(check.position);

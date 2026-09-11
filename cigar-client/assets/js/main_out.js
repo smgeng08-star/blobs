@@ -937,13 +937,15 @@
         var queueLength = view.getUint16(offset, 1);
         offset += 2;
         for (i = 0; i < queueLength; ++i) {
-            var killer = nodes[view.getUint32(offset, 1)],
-                killedNode = nodes[view.getUint32(offset + 4, 1)];
+            var killerId = view.getUint32(offset, 1);
+            var killedId = view.getUint32(offset + 4, 1);
             offset += 8;
-            if (killer && killedNode) {
+            var killer = nodes[killerId];
+            var killedNode = nodes[killedId];
+            if (killedNode) {
                 var wasPlayerCell = (-1 != playerCells.indexOf(killedNode));
                 killedNode.destroy();
-                if (killedNode.size > 22 || killedNode.name || killedNode.isVirus) {
+                if (killer && (killedNode.size > 22 || killedNode.name || killedNode.isVirus)) {
                     killedNode.ox = killedNode.x;
                     killedNode.oy = killedNode.y;
                     killedNode.oSize = killedNode.size;
@@ -1768,11 +1770,12 @@
         wasSimpleDrawing: 1,
         destroy: function() {
             var tmp;
-            for (tmp = 0; tmp < nodelist.length; tmp++)
+            for (tmp = nodelist.length - 1; tmp >= 0; tmp--) {
                 if (nodelist[tmp] == this) {
                     nodelist.splice(tmp, 1);
                     break;
                 }
+            }
             delete nodes[this.id];
             tmp = playerCells.indexOf(this);
             if (-1 != tmp) {
@@ -1783,11 +1786,11 @@
             if (-1 != tmp) {
                 nodesOnScreen.splice(tmp, 1);
             }
-            this.destroyed = 1;
-            // Agar.io behavior: food pellets vanish cleanly on contact, no flying through cells
-            if (this.size > 22 || this.name || this.isVirus) {
-                Cells.push(this);
+            tmp = Cells.indexOf(this);
+            if (-1 != tmp) {
+                Cells.splice(tmp, 1);
             }
+            this.destroyed = 1;
         },
         getNameSize: function() {
             return Math.max(~~(this.size / 3.2), 2);
