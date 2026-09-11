@@ -636,8 +636,8 @@
     }
     function handleWheel(event) {
         zoom *= Math.pow(.9, event.wheelDelta / -120 || event.detail || 0);
-        // Balanced zoom boundaries (no excessive zoom-out into void)
-        if (zoom < 0.55) zoom = 0.55;
+        // Wider zoom-out boundary
+        if (zoom < 0.35) zoom = 0.35;
         if (zoom > 2.2) zoom = 2.2;
     }
     function buildQTree() {
@@ -1146,10 +1146,10 @@
     function calcViewZoom() {
         if (0 != playerCells.length) {
             for (var newViewZoom = 0, i = 0; i < playerCells.length; i++) newViewZoom += playerCells[i].size;
-            // Authentic Agar.io zoom curve (0.32 power, min zoom capped at 0.42 to prevent tiny cells)
-            newViewZoom = Math.pow(Math.min(64 / newViewZoom, 1), 0.32) * viewRange();
+            // Wider field of view (0.36 power, min zoom capped at 0.28)
+            newViewZoom = Math.pow(Math.min(64 / newViewZoom, 1), 0.36) * viewRange();
             viewZoom = (9 * viewZoom + newViewZoom) / 10;
-            if (viewZoom < 0.42) viewZoom = 0.42;
+            if (viewZoom < 0.28) viewZoom = 0.28;
             if (viewZoom > 2.0) viewZoom = 2.0;
         }
     }
@@ -1176,7 +1176,7 @@
             nodeY += (posY - nodeY) * lerpFactor;
             var targetZoom = (posSize || 1) * viewRange();
             viewZoom += (targetZoom - viewZoom) * lerpFactor;
-            if (viewZoom < 0.42) viewZoom = 0.42;
+            if (viewZoom < 0.28) viewZoom = 0.28;
             if (viewZoom > 2.0) viewZoom = 2.0;
         }
         buildQTree();
