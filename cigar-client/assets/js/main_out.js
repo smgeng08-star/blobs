@@ -636,8 +636,8 @@
     }
     function handleWheel(event) {
         zoom *= Math.pow(.9, event.wheelDelta / -120 || event.detail || 0);
-        // Wider zoom-out boundary
-        if (zoom < 0.35) zoom = 0.35;
+        // Generous zoom-out boundary
+        if (zoom < 0.20) zoom = 0.20;
         if (zoom > 2.2) zoom = 2.2;
     }
     function buildQTree() {
@@ -1146,10 +1146,10 @@
     function calcViewZoom() {
         if (0 != playerCells.length) {
             for (var newViewZoom = 0, i = 0; i < playerCells.length; i++) newViewZoom += playerCells[i].size;
-            // Wider field of view (0.36 power, min zoom capped at 0.28)
-            newViewZoom = Math.pow(Math.min(64 / newViewZoom, 1), 0.36) * viewRange();
+            // Enhanced wide field of view (0.40 power, min zoom capped at 0.18 for spacious tactical awareness)
+            newViewZoom = Math.pow(Math.min(64 / newViewZoom, 1), 0.40) * viewRange();
             viewZoom = (9 * viewZoom + newViewZoom) / 10;
-            if (viewZoom < 0.28) viewZoom = 0.28;
+            if (viewZoom < 0.18) viewZoom = 0.18;
             if (viewZoom > 2.0) viewZoom = 2.0;
         }
     }
@@ -1176,7 +1176,7 @@
             nodeY += (posY - nodeY) * lerpFactor;
             var targetZoom = (posSize || 1) * viewRange();
             viewZoom += (targetZoom - viewZoom) * lerpFactor;
-            if (viewZoom < 0.28) viewZoom = 0.28;
+            if (viewZoom < 0.18) viewZoom = 0.18;
             if (viewZoom > 2.0) viewZoom = 2.0;
         }
         buildQTree();
