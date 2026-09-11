@@ -22,47 +22,50 @@ Virus.prototype = new Cell();
 Virus.prototype.onConsume = function(consumer) {
     var client = consumer.owner;
 
-    // In Agar.io, eating a virus adds the virus's mass to the specific consumer cell
+    // Add mass from virus
     consumer.addMass(this.mass);
 
-    // Max pieces a player can have is 16
     var maxCells = this.gameServer.config.playerMaxCells || 16;
-    if (client.cells.length >= maxCells) {
-        return;
+    var cellsLeft = maxCells - client.cells.length;
+    if (cellsLeft <= 0) return;
+
+    var splitMin = this.gameServer.config.playerMinMassSplit || 36;
+    var cellMass = consumer.mass;
+
+    // 1:1 OgarII distributeCellMass algorithm
+    var splits = [];
+    if (cellMass / cellsLeft < splitMin) {
+        var amount = 2,
+            perPiece = NaN;
+        while (
+            (perPiece = cellMass / (amount + 1)) >= splitMin &&
+            amount * 2 <= cellsLeft
+        ) {
+            amount *= 2;
+        }
+        for (var i = 0; i < amount; i++) splits.push(perPiece);
+    } else {
+        var nextMass = cellMass / 2;
+        var massLeft = cellMass / 2;
+        while (cellsLeft > 0) {
+            if (nextMass / cellsLeft < splitMin) break;
+            while (nextMass >= massLeft && cellsLeft > 1) nextMass /= 2;
+            splits.push(nextMass);
+            massLeft -= nextMass;
+            cellsLeft--;
+        }
+        nextMass = massLeft / cellsLeft;
+        for (var i = 0; i < cellsLeft; i++) splits.push(nextMass);
     }
 
-    // In authentic Agar.io, ONLY the specific cell that collided with the virus explodes!
-    // Other cells of the player that did not touch the virus remain 100% intact.
-    var minSplit = this.gameServer.config.playerMinMassSplit || 36;
-    var poppedCells = [consumer];
+    // Launch pieces with explosive boost in 360 starburst
+    for (var i = 0; i < splits.length; i++) {
+        if (client.cells.length >= maxCells) break;
+        var pieceMass = Math.max(10, Math.floor(splits[i]));
+        if (consumer.mass <= pieceMass + 10) break;
 
-    while (client.cells.length < maxCells) {
-        var largest = null;
-        for (var i = 0; i < poppedCells.length; i++) {
-            var c = poppedCells[i];
-            if (!c || c.eaten) continue;
-            if (c.mass >= minSplit && (!largest || c.mass > largest.mass)) {
-                largest = c;
-            }
-        }
-
-        // If no cell in the exploding cluster can split further, stop
-        if (!largest || largest.mass < minSplit) {
-            break;
-        }
-
-        // Split the largest cell in this cluster exactly in half
-        var splitMass = Math.floor(largest.mass / 2);
-        var angle = Math.random() * Math.PI * 2;
-
-        var prevCount = client.cells.length;
-        var created = this.gameServer.nodeHandler.createPlayerCell(client, largest, angle, splitMass);
-        if (created && client.cells.length > prevCount) {
-            var newPiece = client.cells[client.cells.length - 1];
-            if (newPiece) poppedCells.push(newPiece);
-        } else {
-            break;
-        }
+        var angle = Math.random() * 2 * Math.PI;
+        this.gameServer.nodeHandler.createPlayerCell(client, consumer, angle, pieceMass);
     }
 };
 
