@@ -26,7 +26,7 @@ Virus.prototype.onConsume = function(consumer) {
     consumer.addMass(this.mass);
 
     // Max pieces a player can have is 16
-    var maxCells = this.gameServer.config.playerMaxCells;
+    var maxCells = this.gameServer.config.playerMaxCells || 16;
     var currentCells = client.cells.length;
 
     // If player already has max cells (16), virus is simply absorbed without popping
@@ -34,24 +34,24 @@ Virus.prototype.onConsume = function(consumer) {
         return;
     }
 
-    var splitsNeeded = maxCells - currentCells;
-    if (splitsNeeded <= 0) return;
-
-    // Determine how many pieces to explode into
+    // Determine how many splits can be performed up to maxCells
+    var maxSplits = maxCells - currentCells;
     var totalMass = consumer.mass;
-    var pieces = Math.min(splitsNeeded, Math.floor(totalMass / 20));
-    if (pieces < 1) pieces = 1;
 
-    // In authentic Agar.io, virus splits the cell into multiple equal small pieces ejected outward
-    var splitMass = Math.max(10, Math.floor((totalMass * 0.45) / pieces));
-    var angleStep = (2 * Math.PI) / pieces;
+    // In authentic Agar.io, determine piece count based on cell mass
+    var pieces = Math.min(maxSplits, Math.max(1, Math.floor(totalMass / 30)));
+    if (pieces <= 0) return;
+
+    // In authentic Agar.io, mass is divided so that the cell bursts into balanced pieces
+    var splitMass = Math.max(12, Math.floor((totalMass * 0.65) / pieces));
+    var angleStep = (Math.PI * 2) / pieces;
     var baseAngle = Math.random() * Math.PI * 2;
 
     for (var i = 0; i < pieces; i++) {
         if (client.cells.length >= maxCells) break;
-        if (consumer.mass < this.gameServer.config.playerMinMassSplit || consumer.mass <= splitMass) break;
+        if (consumer.mass < this.gameServer.config.playerMinMassSplit || consumer.mass <= splitMass + 10) break;
 
-        var angle = baseAngle + (i * angleStep) + (Math.random() * 0.4 - 0.2);
+        var angle = baseAngle + (i * angleStep);
         this.gameServer.nodeHandler.createPlayerCell(client, consumer, angle, splitMass);
     }
 };
