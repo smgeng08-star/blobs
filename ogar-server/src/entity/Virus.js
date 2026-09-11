@@ -27,37 +27,33 @@ Virus.prototype.onConsume = function(consumer) {
 
     // Max pieces a player can have is 16
     var maxCells = this.gameServer.config.playerMaxCells || 16;
-    var currentCells = client.cells.length;
-
-    // If player already has max cells (16), virus is simply absorbed without popping
-    if (currentCells >= maxCells) {
+    if (client.cells.length >= maxCells) {
         return;
     }
 
-    // Determine how many splits can be performed up to maxCells
-    var maxSplits = maxCells - currentCells;
-    var totalMass = consumer.mass;
+    // In authentic Agar.io, a virus explosion repeatedly splits the largest available cell in half
+    // until the 16 cell limit is reached or cells are too small to split.
+    var minSplit = this.gameServer.config.playerMinMassSplit || 36;
 
-    // In authentic Agar.io, determine piece count based on cell mass
-    var pieces = Math.min(maxSplits, Math.max(1, Math.floor(totalMass / 25)));
-    if (pieces <= 0) return;
+    while (client.cells.length < maxCells) {
+        var largest = null;
+        for (var i = 0; i < client.cells.length; i++) {
+            var c = client.cells[i];
+            if (!c || c.eaten) continue;
+            if (c.mass >= minSplit && (!largest || c.mass > largest.mass)) {
+                largest = c;
+            }
+        }
 
-    // In authentic Agar.io:
-    // The original main cell keeps the majority of mass in the center,
-    // while a cloud of varying smaller pieces (~14 to 32 mass) are launched outward radially.
-    var angleStep = (Math.PI * 2) / pieces;
-    var baseAngle = Math.random() * Math.PI * 2;
+        // If no cell is large enough to split in half, stop
+        if (!largest || largest.mass < minSplit) {
+            break;
+        }
 
-    for (var i = 0; i < pieces; i++) {
-        if (client.cells.length >= maxCells) break;
-        if (consumer.mass < this.gameServer.config.playerMinMassSplit) break;
-
-        // Realistic variation for each popped piece (authentic Agar.io feel)
-        var pieceMass = Math.max(12, Math.floor(Math.min(consumer.mass * 0.12, 16 + (Math.random() * 16))));
-        if (consumer.mass <= pieceMass + 15) break;
-
-        var angle = baseAngle + (i * angleStep) + (Math.random() * 0.2 - 0.1);
-        this.gameServer.nodeHandler.createPlayerCell(client, consumer, angle, pieceMass);
+        // Split the largest cell exactly in half with random explosive angle
+        var splitMass = Math.floor(largest.mass / 2);
+        var angle = Math.random() * Math.PI * 2;
+        this.gameServer.nodeHandler.createPlayerCell(client, largest, angle, splitMass);
     }
 };
 
