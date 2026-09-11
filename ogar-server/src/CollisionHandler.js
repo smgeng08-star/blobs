@@ -77,13 +77,13 @@ CollisionHandler.prototype.canEat = function(cell, check) {
     // First check eating distance
     var dist = cell.position.sqDistanceTo(check.position);
 
-    // Food cells (cellType 1) are consumed at the cell border just like in Agar.io
+    // Food cells (cellType 1) are consumed instantly at the cell border
     if (check.cellType == 1) {
-        var r = cell.getSize();
+        var r = cell.getSize() + (check.getSize() || 10);
         return dist <= r * r;
     }
 
-    // Ejected mass (cellType 3) is consumed at the cell border just like in Agar.io
+    // Ejected mass (cellType 3) is consumed at the cell border
     if (check.cellType == 3) {
         // In authentic Agar.io, cells cannot eat ejected mass below 16 mass
         if (cell.mass < 16) {
@@ -93,14 +93,39 @@ CollisionHandler.prototype.canEat = function(cell, check) {
         if (check.owner === cell.owner && check.isMoving) {
             return false;
         }
-        var r = cell.getSize();
-        if (dist > r * r) return false;
-        return true;
+        var r = cell.getSize() + (check.getSize() || 12);
+        return dist <= r * r;
     }
 
     // Virus / MotherCell (cellType 2) collision with player (cellType 0)
     if (check.cellType == 2) {
-        // Player can consume green virus if player mass is greater than virus.mass * 1.15
+        // Handle Red MotherCell in Experimental gamemode
+        if (check.isMotherCell) {
+            if (cell.mass > check.mass * 1.15) {
+                // Larger player eats red virus and pops
+                var hitDist = cell.getSize() + (check.getSize() * 0.35);
+                return dist <= hitDist * hitDist;
+            } else if (check.mass > cell.mass * 1.05) {
+                // Smaller player gets consumed by red virus
+                var hitDist = check.getSize() + (cell.getSize() * 0.35);
+                if (dist <= hitDist * hitDist) {
+                    cell.eaten = true;
+                    cell.setKiller(check);
+                    this.gameServer.removeNode(cell);
+                    check.mass += cell.mass;
+                    var initialBurst = Math.min(Math.floor(cell.mass * 0.1), 20);
+                    for (var b = 0; b < initialBurst; b++) {
+                        check.spawnFood();
+                    }
+                    check.mass -= (initialBurst * (this.gameServer.config.foodMass || 1));
+                    this.gameServer.quadTree.update(check);
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        // Green virus:
         if (cell.mass < check.mass * 1.15) return false;
         // In authentic Agar.io, collision triggers instantly as player cell touches the spiked virus border
         var hitDist = cell.getSize() + (check.getSize() * 0.35);

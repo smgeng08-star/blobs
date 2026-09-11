@@ -129,10 +129,11 @@ QuadTree.prototype.query = function(range, predicate) {
     var items = [];
     var givenPredicate = predicate instanceof Function;
     if (this.branches.length > 0) {
-        items = items.concat(this.branches[0].query(range, predicate));
-        items = items.concat(this.branches[1].query(range, predicate));
-        items = items.concat(this.branches[2].query(range, predicate));
-        items = items.concat(this.branches[3].query(range, predicate));
+        for (var b = 0; b < 4; b++) {
+            if (this.branches[b].range.intersects(range)) {
+                items = items.concat(this.branches[b].query(range, predicate));
+            }
+        }
     } else {
         for (var i = 0; i < this.nodes.length; i++) {
             var node = this.nodes[i];

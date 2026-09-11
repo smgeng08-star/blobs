@@ -51,13 +51,15 @@ PlayerCell.prototype.move = function() {
 };
 
 PlayerCell.prototype.eat = function() {
-    var nearby = this.gameServer.quadTree.query(this.getRange());
+    var rangeSize = this.getSize() + 120;
+    var Rectangle = require('../modules/Rectangle');
+    var queryBox = new Rectangle(this.position.x, this.position.y, rangeSize, rangeSize);
+    var nearby = this.gameServer.quadTree.query(queryBox);
 
     var i = nearby.length;
     while (--i > -1) {
         var check = nearby[i];
-        if (!check) continue;
-        if (check.eaten) continue;
+        if (!check || check.eaten || check === this) continue;
 
         if (this.gameServer.collisionHandler.canEat(this, check)) {
             check.eaten = true;
