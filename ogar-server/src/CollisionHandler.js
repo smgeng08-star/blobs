@@ -140,11 +140,11 @@ CollisionHandler.prototype.canEat = function(cell, check) {
         if (!cell.owner.mergeOverride) {
             if (!cell.shouldRecombine || !check.shouldRecombine || cell.collisionRestoreTicks > 0 || check.collisionRestoreTicks > 0) return false;
         }
-        // When merging is allowed, merge when one cell overlaps the other
+        // When merging is allowed, merge when one cell overlaps the other deeply
         var r1 = cell.getSize();
         var r2 = check.getSize();
-        var maxEatDist = Math.max(r1, r2) - (Math.min(r1, r2) * 0.25);
-        if (maxEatDist <= 0) maxEatDist = Math.max(r1, r2);
+        var maxEatDist = r1 - (r2 * 0.35);
+        if (maxEatDist <= 0) maxEatDist = r1;
         return dist <= maxEatDist * maxEatDist;
     }
 
@@ -153,14 +153,16 @@ CollisionHandler.prototype.canEat = function(cell, check) {
         return false; // Same team cells can't eat each other
     }
 
-    // Enemy Player cell / Bot: Consumer must be at least 1.15x of victim mass
-    var reqMultiplier = 1.15;
+    // Enemy Player cell / Bot: In authentic Agar.io, consumer must be at least 1.25x (125%) of victim mass
+    var reqMultiplier = 1.25;
     if (cell.mass < check.mass * reqMultiplier) return false;
 
-    // Instant Authentic Eat: When the smaller cell touches/overlaps the larger cell
+    // Authentic Agar.io Eating Distance: Victim's center must be deeply engulfed (at least 1/3 inside consumer radius)
+    // This allows smaller cells to maneuver and split between two enemy cells without getting sucked in from the edge!
     var r1 = cell.getSize();
     var r2 = check.getSize();
-    var maxEatDist = r1 + (r2 * 0.1);
+    var maxEatDist = r1 - (r2 / 3);
+    if (maxEatDist <= 0) return false;
 
     return dist <= maxEatDist * maxEatDist;
 };
