@@ -289,11 +289,17 @@ NodeHandler.prototype.createPlayerCell = function(client, parent, angle, mass) {
     // Minimum mass to split
     if (parent.mass < this.gameServer.config.playerMinMassSplit) return false;
 
-    // Create cell
+    // Create cell with initial split distance offset (1:1 with OgarII)
+    var offsetDist = 40;
+    var startPos = new Vector(
+        parent.position.x - (Math.sin(angle) * offsetDist),
+        parent.position.y - (Math.cos(angle) * offsetDist)
+    );
+
     var newCell = new Entity.PlayerCell(
         this.gameServer.getNextNodeId(),
         client,
-        parent.position.clone(),
+        startPos,
         mass,
         this.gameServer
     );
