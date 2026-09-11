@@ -307,8 +307,8 @@ NodeHandler.prototype.createPlayerCell = function(client, parent, angle, mass) {
     );
 
     // Cells won't collide immediately
-    newCell.collisionRestoreTicks = 25;
-    parent.collisionRestoreTicks = 25;
+    newCell.collisionRestoreTicks = 15;
+    parent.collisionRestoreTicks = 15;
 
     // Add to moving node list
     this.movingNodes.push(newCell);
