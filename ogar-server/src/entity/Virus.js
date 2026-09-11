@@ -31,38 +31,31 @@ Virus.prototype.onConsume = function(consumer) {
         return;
     }
 
-    // In authentic Agar.io, ONLY the specific cell that collided with the virus explodes!
-    // Other cells of the player that did not touch the virus remain 100% intact.
+    // Determine how many pieces can be spawned up to maxCells
+    var splitsNeeded = maxCells - client.cells.length;
+    if (splitsNeeded <= 0) return;
+
+    var totalMass = consumer.mass;
     var minSplit = this.gameServer.config.playerMinMassSplit || 36;
-    var poppedCells = [consumer];
+    if (totalMass < minSplit) return;
 
-    while (client.cells.length < maxCells) {
-        var largest = null;
-        for (var i = 0; i < poppedCells.length; i++) {
-            var c = poppedCells[i];
-            if (!c || c.eaten) continue;
-            if (c.mass >= minSplit && (!largest || c.mass > largest.mass)) {
-                largest = c;
-            }
-        }
+    // Number of pieces to burst out (up to 15 pieces)
+    var pieces = Math.min(splitsNeeded, Math.max(1, Math.floor(totalMass / 30)));
 
-        // If no cell in the exploding cluster can split further, stop
-        if (!largest || largest.mass < minSplit) {
-            break;
-        }
+    // In authentic Agar.io:
+    // Large cells (e.g. 5,000 mass) do NOT shred completely.
+    // The main cell remains giant and retains 85-90% of its mass in the center,
+    // while popping off a ring of small pieces (~15 to 45 mass each) in a 360 starburst.
+    var pieceMass = Math.max(12, Math.floor(Math.min(totalMass * 0.02, 45)));
+    var angleStep = (Math.PI * 2) / pieces;
+    var baseAngle = Math.random() * Math.PI * 2;
 
-        // Split the largest cell in this cluster exactly in half
-        var splitMass = Math.floor(largest.mass / 2);
-        var angle = Math.random() * Math.PI * 2;
+    for (var i = 0; i < pieces; i++) {
+        if (client.cells.length >= maxCells) break;
+        if (consumer.mass < minSplit || consumer.mass <= pieceMass + 20) break;
 
-        var prevCount = client.cells.length;
-        var created = this.gameServer.nodeHandler.createPlayerCell(client, largest, angle, splitMass);
-        if (created && client.cells.length > prevCount) {
-            var newPiece = client.cells[client.cells.length - 1];
-            if (newPiece) poppedCells.push(newPiece);
-        } else {
-            break;
-        }
+        var angle = baseAngle + (i * angleStep) + (Math.random() * 0.2 - 0.1);
+        this.gameServer.nodeHandler.createPlayerCell(client, consumer, angle, pieceMass);
     }
 };
 
