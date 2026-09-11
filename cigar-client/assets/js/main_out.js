@@ -283,11 +283,21 @@
                         }
                     }
                     break;
-                case 87: // W key (Authentic Agar.io: Strictly 1 press = 1 bullet)
+                case 87: // W key (Fast Macro Eject)
                     if (!wPressed && !isTyping && !hasOverlay) {
                         wPressed = 1;
                         sendMouseMove();
                         sendUint8(21);
+                        if (wInterval) clearInterval(wInterval);
+                        wInterval = setInterval(function() {
+                            if (wPressed && !hasOverlay) {
+                                sendMouseMove();
+                                sendUint8(21);
+                            } else {
+                                clearInterval(wInterval);
+                                wInterval = null;
+                            }
+                        }, 25);
                     }
                     break;
                 case 69: // E key
@@ -296,11 +306,21 @@
                         sendUint8(22);
                     }
                     break;
-                case 82: // R key (Minion feed: Strictly 1 press = 1 bullet)
+                case 82: // R key (Minion Fast Macro Feed)
                     if (!rPressed && !isTyping && !hasOverlay) {
                         rPressed = 1;
                         sendMouseMove();
                         sendUint8(23);
+                        if (rInterval) clearInterval(rInterval);
+                        rInterval = setInterval(function() {
+                            if (rPressed && !hasOverlay) {
+                                sendMouseMove();
+                                sendUint8(23);
+                            } else {
+                                clearInterval(rInterval);
+                                rInterval = null;
+                            }
+                        }, 25);
                     }
                     break;
                 case 84: // T key
