@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Agar.io</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu:700" rel="stylesheet" type="text/css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            font-family: 'Ubuntu', sans-serif;
+            background-color: #f2fbff;
+            user-select: none;
+        }
+
+        #canvas {
+            display: block; width: 100%; height: 100%;
+        }
+
+        /* ── AUTHENTIC AGAR.IO START DIALOG ── */
+        #overlays {
+            position: absolute; inset: 0;
+            background-color: rgba(0, 0, 0, 0.45);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+        }
+
+        #helloContainer {
+            width: 380px;
+            background-color: #ffffff;
+            border-radius: 6px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            padding: 24px;
+            text-align: center;
+            position: relative;
+        }
+
+        .agar-logo {
+            font-size: 52px;
+            font-weight: 700;
+            letter-spacing: -2px;
+            margin-bottom: 14px;
+            line-height: 1;
+        }
+        .logo-a1 { color: #0099ff; }
+        .logo-g  { color: #ff3333; }
+        .logo-a2 { color: #ffcc00; }
+        .logo-r  { color: #0099ff; }
+        .logo-dot{ color: #33cc33; }
+        .logo-i  { color: #ff3333; }
+        .logo-o  { color: #0099ff; }
+
+        .nick-input {
+            width: 100%;
+            height: 44px;
+            padding: 0 14px;
+            font-family: 'Ubuntu', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #444;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .nick-input:focus { border-color: #0099ff; }
+
+        .btn-play {
+            width: 100%;
+            height: 48px;
+            background-color: #00b9e8;
+            color: #ffffff;
+            font-family: 'Ubuntu', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+            transition: background-color 0.15s;
+        }
+        .btn-play:hover { background-color: #00a5d2; }
+        .btn-play:active { background-color: #0091b8; }
+
+        .btn-spectate {
+            width: 100%;
+            height: 36px;
+            background-color: #7b8994;
+            color: #ffffff;
+            font-family: 'Ubuntu', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .btn-spectate:hover { background-color: #6b7782; }
+
+        .settings-box {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e5e5;
+            text-align: left;
+            font-size: 12px;
+            color: #666;
+        }
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .setting-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
+        /* ── AUTHENTIC LEADERBOARD (Top Right) ── */
+        #leaderboard {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 200px;
+            background-color: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            pointer-events: none;
+            z-index: 50;
+        }
+        #leaderboard h4 {
+            font-size: 15px;
+            text-align: center;
+            margin-bottom: 8px;
+            text-transform: capitalize;
+            letter-spacing: 0.5px;
+        }
+        .lb-item {
+            display: flex;
+            justify-content: space-between;
+            line-height: 1.5;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .lb-me { color: #ffaa00 !important; }
+
+        /* ── AUTHENTIC SCORE (Bottom Left) ── */
+        #scoreText {
+            position: absolute;
+            bottom: 14px;
+            left: 14px;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 700;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.8);
+            pointer-events: none;
+            z-index: 50;
+        }
+        body.light-theme #scoreText {
+            color: #333333;
+            text-shadow: none;
+        }
+
+        /* ── SERVER BOT CONTROL BAR (Top Left) ── */
+        #serverBar {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: rgba(0, 0, 0, 0.45);
+            border-radius: 6px;
+            padding: 6px 12px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            z-index: 50;
+        }
+        .s-btn {
+            background-color: #00b9e8;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .s-btn:hover { filter: brightness(1.1); }
+        .s-btn-green { background-color: #22c55e; }
+        .s-btn-purple { background-color: #8b5cf6; }
+        .s-btn-red { background-color: #ef4444; }
+    </style>
+</head>
+<body class="light-theme">
+
+    <div id="overlays">
+        <div id="helloContainer">
+            <div class="agar-logo">
+                <span class="logo-a1">a</span><span class="logo-g">g</span><span class="logo-a2">a</span><span class="logo-r">r</span><span class="logo-dot">.</span><span class="logo-i">i</span><span class="logo-o">o</span>
+            </div>
+
+            <input id="nick" class="nick-input" placeholder="Nick" maxlength="15" autofocus value="Leader">
+
+            <button class="btn-play" onclick="setNickAndPlay()">Play</button>
+            <button class="btn-spectate" onclick="spectate()">Spectate</button>
+
+            <div class="settings-box">
+                <div class="setting-row">
+                    <label><input type="checkbox" id="chk-dark" onchange="toggleDarkTheme(this.checked)"> Dark theme</label>
+                    <label><input type="checkbox" id="chk-mass" checked> Show mass</label>
+                </div>
+                <div class="setting-row" style="margin-top: 8px;">
+                    <span>Starting Mass:</span>
+                    <input id="inp-startmass" type="number" value="300" min="10" max="2500" style="width: 70px; padding: 2px 4px; font-weight: bold; text-align: center;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentic HUD -->
+    <div id="serverBar">
+        <span id="botCountLbl" style="color: #38bdf8;">BOTS: 25</span>
+        <button class="s-btn s-btn-green" onclick="spawnBots(10)">+10 Bots</button>
+        <button class="s-btn s-btn-purple" onclick="toggleBotMode()">Mode: <span id="modeText">Tracker</span></button>
+        <button class="s-btn" onclick="feedMe()">Feed Me (R)</button>
+        <button class="s-btn s-btn-red" onclick="clearBots()">Clear Bots</button>
+    </div>
+
+    <div id="leaderboard">
+        <h4>Leaderboard</h4>
+        <div id="lb-content"></div>
+    </div>
+
+    <div id="scoreText">Score: 300</div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let isDarkMode = false;
+        let showMass = true;
+        let isSpectating = false;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let ws = null;
+        let myName = 'Leader';
+        let mouseX = 0, mouseY = 0;
+        let camX = 0, camY = 0, camScale = 1;
+        let gameState = { pellets: [], ejected: [], viruses: [], players: [], bots: [] };
+        let botMode = 'tracker';
+
+        function toggleDarkTheme(dark) {
+            isDarkMode = dark;
+            document.body.className = dark ? '' : 'light-theme';
+            document.body.style.backgroundColor = dark ? '#111111' : '#f2fbff';
+        }
+
+        // Color shading utility for authentic Agar border ring
+        function darkenColor(hex, percent) {
+            let num = parseInt(hex.replace('#', ''), 16);
+            let r = (num >> 16) - Math.round(255 * (percent / 100));
+            let g = ((num >> 8) & 0x00FF) - Math.round(255 * (percent / 100));
+            let b = (num & 0x0000FF) - Math.round(255 * (percent / 100));
+            return '#' + (0x1000000 + (r < 0 ? 0 : r) * 0x10000 + (g < 0 ? 0 : g) * 0x100 + (b < 0 ? 0 : b)).toString(16).slice(1);
+        }
+
+        function connect() {
+            ws = new WebSocket('ws://' + window.location.host);
+
+            ws.onopen = () => {
+                const startMass = Number(document.getElementById('inp-startmass').value) || 300;
+                fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ startMass })
+                });
+                ws.send(JSON.stringify({ type: 'join', name: myName }));
+            };
+
+            ws.onmessage = e => {
+                const msg = JSON.parse(e.data);
+                if (msg.type === 'state') {
+                    gameState = msg;
+                }
+            };
+        }
+
+        function setNickAndPlay() {
+            myName = document.getElementById('nick').value.trim() || 'An unnamed cell';
+            showMass = document.getElementById('chk-mass').checked;
+            document.getElementById('overlays').style.display = 'none';
+            connect();
+        }
+
+        function spectate() {
+            myName = 'spectator_' + Math.random().toString(36).substring(2, 6);
+            isSpectating = true;
+            document.getElementById('overlays').style.display = 'none';
+            connect();
+        }
+
+        // Mouse Controls
+        window.addEventListener('mousemove', e => {
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
+            mouseX = camX + (e.clientX - cx) / camScale;
+            mouseY = camY + (e.clientY - cy) / camScale;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'mouse', x: mouseX, y: mouseY }));
+            }
+        });
+
+        // Key Controls (Space = Split, W = Eject, R = Bot Feed)
+        window.addEventListener('keydown', e => {
+            if (document.getElementById('overlays').style.display !== 'none') return;
+            if (e.code === 'Space') {
+                if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'split' }));
+            }
+            if (e.key === 'w' || e.key === 'W') {
+                if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'eject' }));
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                feedMe();
+            }
+            if (e.key === 'Escape') {
+                document.getElementById('overlays').style.display = 'flex';
+            }
+        });
+
+        function spawnBots(count) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const mass = Number(document.getElementById('inp-startmass').value) || 300;
+                ws.send(JSON.stringify({ type: 'spawnBots', count, mass }));
+            }
+        }
+
+        function toggleBotMode() {
+            botMode = botMode === 'tracker' ? 'farmer' : 'tracker';
+            document.getElementById('modeText').textContent = botMode.charAt(0).toUpperCase() + botMode.slice(1);
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'setBotMode', mode: botMode }));
+            }
+        }
+
+        function feedMe() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'feedPlayer' }));
+            }
+        }
+
+        function clearBots() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'clearBots' }));
+            }
+        }
+
+        // ── RENDER ENGINE (IDENTICAL TO REAL AGAR.IO) ─────────────
+        function drawVirus(x, y, r) {
+            ctx.save();
+            ctx.fillStyle = '#33ff33';
+            ctx.strokeStyle = '#2bcf2b';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            const spikes = 24;
+            for (let i = 0; i < spikes * 2; i++) {
+                const rad = (i % 2 === 0) ? r : r - 7;
+                const angle = (Math.PI * 2 / (spikes * 2)) * i;
+                const px = x + Math.cos(angle) * rad;
+                const py = y + Math.sin(angle) * rad;
+                if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawCell(x, y, r, color, name, mass, isMyCell = false) {
+            ctx.save();
+            ctx.fillStyle = color;
+            ctx.strokeStyle = darkenColor(color, 12);
+            ctx.lineWidth = Math.max(3, Math.round(r * 0.075));
+
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Authentic text rendering (White fill with thick black stroke)
+            if (name) {
+                const fontSize = Math.max(12, Math.floor(r * 0.35));
+                ctx.font = '700 ' + fontSize + 'px Ubuntu, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                const textY = (showMass && r > 24) ? y - fontSize * 0.25 : y;
+
+                ctx.lineWidth = Math.max(2, Math.floor(fontSize * 0.16));
+                ctx.strokeStyle = '#000000';
+                ctx.fillStyle = '#ffffff';
+
+                ctx.strokeText(name, x, textY);
+                ctx.fillText(name, x, textY);
+
+                if (showMass && r > 24) {
+                    const massFontSize = Math.max(10, Math.floor(fontSize * 0.65));
+                    ctx.font = '700 ' + massFontSize + 'px Ubuntu, sans-serif';
+                    ctx.lineWidth = Math.max(2, Math.floor(massFontSize * 0.16));
+                    const massY = textY + fontSize * 0.85;
+                    ctx.strokeText(mass, x, massY);
+                    ctx.fillText(mass, x, massY);
+                }
+            }
+            ctx.restore();
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Camera follow player
+            const me = gameState.players.find(p => p.name === myName);
+            let totalMass = 0;
+            if (me && me.cells.length > 0) {
+                let sx = 0, sy = 0;
+                for (const c of me.cells) { sx += c.x; sy += c.y; totalMass += c.m; }
+                camX += ((sx / me.cells.length) - camX) * 0.1;
+                camY += ((sy / me.cells.length) - camY) * 0.1;
+
+                // Classic Agar zoom formula based on mass
+                const targetScale = Math.max(0.2, Math.min(1.0, Math.pow(Math.min(64 / totalMass, 1), 0.4)));
+                camScale += (targetScale - camScale) * 0.08;
+            }
+
+            document.getElementById('scoreText').textContent = 'Score: ' + (totalMass || 300);
+            document.getElementById('botCountLbl').textContent = 'BOTS: ' + gameState.bots.length;
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(camScale, camScale);
+            ctx.translate(-camX, -camY);
+
+            // 1. Authentic Agar.io Grid
+            ctx.strokeStyle = isDarkMode ? '#202020' : '#dbe9f4';
+            ctx.lineWidth = 1;
+            const step = 50;
+            const left = Math.floor((camX - cx / camScale) / step) * step;
+            const right = Math.ceil((camX + cx / camScale) / step) * step;
+            const top = Math.floor((camY - cy / camScale) / step) * step;
+            const bottom = Math.ceil((camY + cy / camScale) / step) * step;
+
+            ctx.beginPath();
+            for (let x = left; x <= right; x += step) {
+                ctx.moveTo(x, top); ctx.lineTo(x, bottom);
+            }
+            for (let y = top; y <= bottom; y += step) {
+                ctx.moveTo(left, y); ctx.lineTo(right, y);
+            }
+            ctx.stroke();
+
+            // 2. Map Border
+            ctx.strokeStyle = isDarkMode ? '#444444' : '#adc5d9';
+            ctx.lineWidth = 15;
+            ctx.strokeRect(-4000, -4000, 8000, 8000);
+
+            // 3. Pellets (Classic dots)
+            for (let i = 0; i < gameState.pellets.length; i++) {
+                const p = gameState.pellets[i];
+                ctx.fillStyle = p.c;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 4. Ejected Mass (W)
+            for (let i = 0; i < gameState.ejected.length; i++) {
+                const em = gameState.ejected[i];
+                ctx.fillStyle = em.c;
+                ctx.strokeStyle = darkenColor(em.c, 15);
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(em.x, em.y, em.r, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            // 5. Viruses
+            for (let i = 0; i < gameState.viruses.length; i++) {
+                const v = gameState.viruses[i];
+                drawVirus(v.x, v.y, v.r);
+            }
+
+            // 6. Bots (Rendered with identical style to Agar cells)
+            for (let i = 0; i < gameState.bots.length; i++) {
+                const b = gameState.bots[i];
+                drawCell(b.x, b.y, b.r, b.c, b.name, b.m, false);
+            }
+
+            // 7. Players
+            for (let i = 0; i < gameState.players.length; i++) {
+                const p = gameState.players[i];
+                const isMe = p.name === myName;
+                for (let j = 0; j < p.cells.length; j++) {
+                    const c = p.cells[j];
+                    drawCell(c.x, c.y, c.r, c.c, p.name, c.m, isMe);
+                }
+            }
+
+            ctx.restore();
+
+            // 8. Authentic Agar.io Leaderboard (Top 10)
+            const allPlayers = [
+                ...gameState.players.map(p => ({ name: p.name, mass: p.cells.reduce((s, c) => s + c.m, 0) })),
+                ...gameState.bots.map(b => ({ name: b.name, mass: b.m }))
+            ].sort((a, b) => b.mass - a.mass).slice(0, 10);
+
+            const lbEl = document.getElementById('lb-content');
+            lbEl.innerHTML = allPlayers.map((p, idx) => `
+                <div class="lb-item ${p.name === myName ? 'lb-me' : ''}">
+                    <span>${idx + 1}. ${p.name}</span>
+                </div>
+            `).join('');
+
+            requestAnimationFrame(render);
+        }
+
+        render();
+    </script>
+</body>
+</html>

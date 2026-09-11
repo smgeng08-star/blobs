@@ -1,0 +1,16 @@
+{
+  "name": "blobs-agario-israel",
+  "version": "1.0.0",
+  "description": "Blobs.io Israel - Agar.io clone server & client",
+  "main": "production_server.js",
+  "scripts": {
+    "start": "node production_server.js",
+    "install-deps": "cd ogar-server && npm install"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
