@@ -17,13 +17,13 @@ PlayerCell.prototype = new Cell();
 // Main Functions
 
 PlayerCell.prototype.calcMergeTime = function(base) {
-    // Check for merging time
+    // Check for merging time (1:1 OgarII formula based on size/radius)
     var r = false;
     if (base == 0 || this.owner.mergeOverride) {
         // Instant recombine in config or merge command was triggered for this client
         r = true;
     } else {
-        var rec = Math.floor(base + ((0.02 * this.mass))); // base seconds + 0.02% of mass
+        var rec = Math.floor(base + ((0.02 * this.getSize()))); // base seconds (30s) + 0.02 * size
         if (this.recombineTicks > rec) r = true; // Can combine with other cells
     }
     this.shouldRecombine = r;
@@ -32,7 +32,8 @@ PlayerCell.prototype.calcMergeTime = function(base) {
 // Movement
 
 PlayerCell.prototype.getSpeed = function() {
-    return this.gameServer.config.playerSpeed * 1.6 / Math.pow(this.getSize(), 0.32);
+    // 1:1 OgarII moveSpeed formula
+    return 88 * Math.pow(this.getSize(), -0.4396754) * (this.gameServer.config.playerSpeed / 30);
 };
 
 PlayerCell.prototype.getSplittingSpeed = function() {
