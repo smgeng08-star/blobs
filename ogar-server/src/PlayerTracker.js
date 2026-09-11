@@ -137,10 +137,12 @@ PlayerTracker.prototype.update = function() {
     // Don't send any messages if client didn't respond with protocol version
     if (this.socket.packetHandler.protocolVersion == 0) return;
 
-    // Actions buffer (So that people cant spam packets)
-    if (this.socket.packetHandler.pressSpace) { // Split cell
+    // Actions buffer (1:1 OgarII playerSplitCap loop so double/triple splits execute with 0 dropped keystrokes)
+    var splitCount = this.socket.packetHandler.splitAttempts || (this.socket.packetHandler.pressSpace ? 1 : 0);
+    this.socket.packetHandler.splitAttempts = 0;
+    this.socket.packetHandler.pressSpace = false;
+    for (var s = 0; s < splitCount; s++) {
         if (!this.mergeOverride) this.gameServer.gameMode.pressSpace(this.gameServer, this);
-        this.socket.packetHandler.pressSpace = false;
     }
 
     if (this.socket.packetHandler.pressW) { // Eject mass

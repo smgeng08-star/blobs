@@ -9,6 +9,7 @@ module.exports = CollisionHandler;
 
 CollisionHandler.prototype.pushApart = function(cell, check) {
     if (cell.nodeId == check.nodeId) return false; // Can't collide with self
+    if (cell.collisionRestoreTicks > 0 || check.collisionRestoreTicks > 0) return false; // Authentic Agar.io / OgarII playerNoCollideDelay
 
     // Quick bounding box check
     if (!cell.getRange().intersects(check.getRange())) return false;

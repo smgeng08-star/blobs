@@ -37,7 +37,8 @@ PlayerCell.prototype.getSpeed = function() {
 };
 
 PlayerCell.prototype.getSplittingSpeed = function() {
-    return this.gameServer.config.playerSpeed * 2.6 * Math.pow(this.getSize(), 0.0122);
+    // 1:1 OgarII playerSplitBoost (780 / 9 = 86.666)
+    return 86.666 * (this.gameServer.config.playerSpeed / 30);
 };
 
 PlayerCell.prototype.move = function() {

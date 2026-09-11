@@ -10,6 +10,7 @@ function PacketHandler(gameServer, socket) {
     this.pressQ = false;
     this.pressW = false;
     this.pressSpace = false;
+    this.splitAttempts = 0;
 }
 
 module.exports = PacketHandler;
@@ -67,7 +68,8 @@ PacketHandler.prototype.handleMessage = function(message) {
             }
             break;
         case 17:
-            // Space Press - Split cell
+            // Space Press - Split cell (queue split attempts so rapid double-splits are never dropped)
+            this.splitAttempts++;
             this.pressSpace = true;
             break;
         case 18:

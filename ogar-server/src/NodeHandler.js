@@ -271,16 +271,26 @@ NodeHandler.prototype.splitCells = function(client) {
     var len = client.cells.length;
     var splitCells = 0; // How many cells have been split
     for (var i = 0; i < len; i++) {
+        if (client.cells.length >= this.gameServer.config.playerMaxCells) break;
         var cell = client.cells[i];
+        if (!cell || cell.eaten) continue;
 
-        var angle = cell.position.angleTo(client.mouse.x, client.mouse.y);
-        if (isNaN(angle)) angle = Math.PI / 2;
+        var dx = client.mouse.x - cell.position.x;
+        var dy = client.mouse.y - cell.position.y;
+        var d = Math.sqrt(dx * dx + dy * dy);
+        if (d < 1) {
+            dx = 1;
+            dy = 0;
+        } else {
+            dx /= d;
+            dy /= d;
+        }
 
-        if (this.createPlayerCell(client, cell, angle, cell.mass / 2) == true) splitCells++;
+        if (this.createPlayerCell(client, cell, { dx: dx, dy: dy }, cell.mass / 2) == true) splitCells++;
     }
 };
 
-NodeHandler.prototype.createPlayerCell = function(client, parent, angle, mass) {
+NodeHandler.prototype.createPlayerCell = function(client, parent, dirOrAngle, mass) {
     // Returns boolean whether a cell has been split or not. You can use this in the future.
 
     // Maximum controllable cells
@@ -289,11 +299,21 @@ NodeHandler.prototype.createPlayerCell = function(client, parent, angle, mass) {
     // Minimum mass to split
     if (parent.mass < this.gameServer.config.playerMinMassSplit) return false;
 
-    // Create cell with initial split distance offset (1:1 with OgarII)
+    var dx = 1, dy = 0;
+    if (typeof dirOrAngle === 'number') {
+        // Angle in radians (e.g. from Virus 360 starburst)
+        dx = Math.sin(dirOrAngle);
+        dy = Math.cos(dirOrAngle);
+    } else if (dirOrAngle && typeof dirOrAngle.dx === 'number') {
+        dx = dirOrAngle.dx;
+        dy = dirOrAngle.dy;
+    }
+
+    // Create cell with initial split distance offset (1:1 with OgarII: playerSplitDistance = 40)
     var offsetDist = 40;
     var startPos = new Vector(
-        parent.position.x - (Math.sin(angle) * offsetDist),
-        parent.position.y - (Math.cos(angle) * offsetDist)
+        parent.position.x + dx * offsetDist,
+        parent.position.y + dy * offsetDist
     );
 
     var newCell = new Entity.PlayerCell(
@@ -305,14 +325,14 @@ NodeHandler.prototype.createPlayerCell = function(client, parent, angle, mass) {
     );
     newCell.setColor(parent.getColor());
 
-    // Set split boost's speed
+    // Set split boost's speed (moveEngineTick uses position.sub(moveEngine), so -dx * splitSpeed moves forward)
     var splitSpeed = newCell.getSplittingSpeed();
     newCell.moveEngine = new Vector(
-        Math.sin(angle) * splitSpeed,
-        Math.cos(angle) * splitSpeed
+        -dx * splitSpeed,
+        -dy * splitSpeed
     );
 
-    // Cells won't collide immediately
+    // Cells won't collide for 15 ticks (1:1 with OgarII playerNoCollideDelay)
     newCell.collisionRestoreTicks = 15;
     parent.collisionRestoreTicks = 15;
 
