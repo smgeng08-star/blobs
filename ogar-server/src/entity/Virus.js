@@ -22,7 +22,7 @@ Virus.prototype = new Cell();
 Virus.prototype.onConsume = function(consumer) {
     var client = consumer.owner;
 
-    // In Agar.io, eating a virus adds the virus's mass to the consumer
+    // In Agar.io, eating a virus adds the virus's mass to the specific consumer cell
     consumer.addMass(this.mass);
 
     // Max pieces a player can have is 16
@@ -31,29 +31,38 @@ Virus.prototype.onConsume = function(consumer) {
         return;
     }
 
-    // In authentic Agar.io, a virus explosion repeatedly splits the largest available cell in half
-    // until the 16 cell limit is reached or cells are too small to split.
+    // In authentic Agar.io, ONLY the specific cell that collided with the virus explodes!
+    // Other cells of the player that did not touch the virus remain 100% intact.
     var minSplit = this.gameServer.config.playerMinMassSplit || 36;
+    var poppedCells = [consumer];
 
     while (client.cells.length < maxCells) {
         var largest = null;
-        for (var i = 0; i < client.cells.length; i++) {
-            var c = client.cells[i];
+        for (var i = 0; i < poppedCells.length; i++) {
+            var c = poppedCells[i];
             if (!c || c.eaten) continue;
             if (c.mass >= minSplit && (!largest || c.mass > largest.mass)) {
                 largest = c;
             }
         }
 
-        // If no cell is large enough to split in half, stop
+        // If no cell in the exploding cluster can split further, stop
         if (!largest || largest.mass < minSplit) {
             break;
         }
 
-        // Split the largest cell exactly in half with random explosive angle
+        // Split the largest cell in this cluster exactly in half
         var splitMass = Math.floor(largest.mass / 2);
         var angle = Math.random() * Math.PI * 2;
-        this.gameServer.nodeHandler.createPlayerCell(client, largest, angle, splitMass);
+
+        var prevCount = client.cells.length;
+        var created = this.gameServer.nodeHandler.createPlayerCell(client, largest, angle, splitMass);
+        if (created && client.cells.length > prevCount) {
+            var newPiece = client.cells[client.cells.length - 1];
+            if (newPiece) poppedCells.push(newPiece);
+        } else {
+            break;
+        }
     }
 };
 
