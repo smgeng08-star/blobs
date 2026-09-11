@@ -153,12 +153,12 @@ CollisionHandler.prototype.canEat = function(cell, check) {
         return false; // Same team cells can't eat each other
     }
 
-    // Enemy Player cell / Bot: In authentic Agar.io, consumer must be at least 1.25x (125%) of victim mass
-    var reqMultiplier = 1.25;
+    // Enemy Player cell / Bot: In authentic Agar.io / OgarII (worldEatMult = 1.140175425099138 => 1.30x mass)
+    var reqMultiplier = 1.30;
     if (cell.mass < check.mass * reqMultiplier) return false;
 
-    // Authentic Agar.io Eating Distance: Victim's center must be deeply engulfed (at least 1/3 inside consumer radius)
-    // This allows smaller cells to maneuver and split between two enemy cells without getting sucked in from the edge!
+    // Authentic Agar.io Eating Distance: Victim's center must be deeply engulfed (at least 1/3 inside consumer radius: r1 - r2 / 3)
+    // This matches OgarII: d <= a.size - b.size / worldEatOverlapDiv (where worldEatOverlapDiv = 3)
     var r1 = cell.getSize();
     var r2 = check.getSize();
     var maxEatDist = r1 - (r2 / 3);
