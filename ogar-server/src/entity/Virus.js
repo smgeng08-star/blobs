@@ -39,20 +39,25 @@ Virus.prototype.onConsume = function(consumer) {
     var totalMass = consumer.mass;
 
     // In authentic Agar.io, determine piece count based on cell mass
-    var pieces = Math.min(maxSplits, Math.max(1, Math.floor(totalMass / 30)));
+    var pieces = Math.min(maxSplits, Math.max(1, Math.floor(totalMass / 25)));
     if (pieces <= 0) return;
 
-    // In authentic Agar.io, mass is divided so that the cell bursts into balanced pieces
-    var splitMass = Math.max(12, Math.floor((totalMass * 0.65) / pieces));
+    // In authentic Agar.io:
+    // The original main cell keeps the majority of mass in the center,
+    // while a cloud of varying smaller pieces (~14 to 32 mass) are launched outward radially.
     var angleStep = (Math.PI * 2) / pieces;
     var baseAngle = Math.random() * Math.PI * 2;
 
     for (var i = 0; i < pieces; i++) {
         if (client.cells.length >= maxCells) break;
-        if (consumer.mass < this.gameServer.config.playerMinMassSplit || consumer.mass <= splitMass + 10) break;
+        if (consumer.mass < this.gameServer.config.playerMinMassSplit) break;
 
-        var angle = baseAngle + (i * angleStep);
-        this.gameServer.nodeHandler.createPlayerCell(client, consumer, angle, splitMass);
+        // Realistic variation for each popped piece (authentic Agar.io feel)
+        var pieceMass = Math.max(12, Math.floor(Math.min(consumer.mass * 0.12, 16 + (Math.random() * 16))));
+        if (consumer.mass <= pieceMass + 15) break;
+
+        var angle = baseAngle + (i * angleStep) + (Math.random() * 0.2 - 0.1);
+        this.gameServer.nodeHandler.createPlayerCell(client, consumer, angle, pieceMass);
     }
 };
 
