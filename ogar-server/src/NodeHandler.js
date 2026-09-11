@@ -121,7 +121,7 @@ NodeHandler.prototype.update = function() {
 
             // Collide if required
             if (this.gameServer.config.playerRecombineTime > 0 && cell.collisionRestoreTicks == 0) {
-                for (var k = j; k < lenc; k++) {
+                for (var k = j + 1; k < lenc; k++) {
                     if (!client.cells[k]) continue;
                     if (client.cells[k].eaten) continue;
                     if ((client.cells[k].shouldRecombine && cell.shouldRecombine) ||
@@ -307,8 +307,8 @@ NodeHandler.prototype.createPlayerCell = function(client, parent, angle, mass) {
     );
 
     // Cells won't collide immediately
-    newCell.collisionRestoreTicks = 15;
-    parent.collisionRestoreTicks = 15;
+    newCell.collisionRestoreTicks = 25;
+    parent.collisionRestoreTicks = 25;
 
     // Add to moving node list
     this.movingNodes.push(newCell);

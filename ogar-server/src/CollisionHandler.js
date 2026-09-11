@@ -136,14 +136,15 @@ CollisionHandler.prototype.canEat = function(cell, check) {
     var isOwnCell = (cell.cellType == 0 && check.cellType == 0 && cell.owner && check.owner && cell.owner.pID == check.owner.pID);
 
     if (isOwnCell) {
-        // Check recombine if merge override wasn't triggered
+        // Can only merge if merge override is on OR if recombine time has passed
         if (!cell.owner.mergeOverride) {
-            if (!cell.shouldRecombine || !check.shouldRecombine || cell.collisionRestoreTicks > 0) return false;
+            if (!cell.shouldRecombine || !check.shouldRecombine || cell.collisionRestoreTicks > 0 || check.collisionRestoreTicks > 0) return false;
         }
-        // Merging own cells: merge instantly when touching
+        // When merging is allowed, merge when one cell overlaps the other
         var r1 = cell.getSize();
         var r2 = check.getSize();
-        var maxEatDist = r1 + (r2 * 0.2);
+        var maxEatDist = Math.max(r1, r2) - (Math.min(r1, r2) * 0.25);
+        if (maxEatDist <= 0) maxEatDist = Math.max(r1, r2);
         return dist <= maxEatDist * maxEatDist;
     }
 
@@ -156,10 +157,10 @@ CollisionHandler.prototype.canEat = function(cell, check) {
     var reqMultiplier = 1.15;
     if (cell.mass < check.mass * reqMultiplier) return false;
 
-    // Instant Authentic Eat: When the smaller cell touches the larger cell
+    // Instant Authentic Eat: When the smaller cell touches/overlaps the larger cell
     var r1 = cell.getSize();
     var r2 = check.getSize();
-    var maxEatDist = r1 + (r2 * 0.2);
+    var maxEatDist = r1 + (r2 * 0.1);
 
     return dist <= maxEatDist * maxEatDist;
 };
