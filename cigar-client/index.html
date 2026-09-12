@@ -9,11 +9,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link href="assets/css/bootstrap.min.css?v=20260912_36" rel="stylesheet">
-    <link href="assets/css/index.css?v=20260912_36" rel="stylesheet">
+    <link href="assets/css/bootstrap.min.css?v=20260912_37" rel="stylesheet">
+    <link href="assets/css/index.css?v=20260912_37" rel="stylesheet">
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/vector.js?v=20260912_36"></script>
-    <script src="assets/js/main_out.js?v=20260912_36"></script>
+    <script src="assets/js/vector.js?v=20260912_37"></script>
+    <script src="assets/js/main_out.js?v=20260912_37"></script>
     <script>
         // Instant synchronous auth execution before render
         function quickAuthInit() {
@@ -71,6 +71,22 @@
                 <button type="button" class="b-tab" id="b-tab-login" onclick="switchBTab('login')">התחברות</button>
                 <button type="button" class="b-tab" id="b-tab-lb" onclick="switchBTab('lb')">לוח תוצאות</button>
             </div>
+            <script>
+                // Instant inline execution to prevent any UI flicker
+                (function() {
+                    try {
+                        var u = localStorage.getItem('blobz_logged_user');
+                        if (u) {
+                            var bLog = document.getElementById('b-tab-login');
+                            var bBots = document.getElementById('b-tab-bots');
+                            var bReg = document.getElementById('b-tab-reg');
+                            if (bLog) bLog.innerText = u;
+                            if (bBots) bBots.style.display = 'block';
+                            if (bReg) bReg.style.display = 'none';
+                        }
+                    } catch(e){}
+                })();
+            </script>
 
             <!-- Tab 1: משחק (Game Landing 1:1 with Screenshot) -->
             <div id="tab-pane-play" class="b-tab-pane active">
@@ -302,6 +318,21 @@
                         </button>
                     </div>
                 </div>
+                <script>
+                    (function() {
+                        try {
+                            var u = localStorage.getItem('blobz_logged_user');
+                            if (u) {
+                                var lF = document.getElementById('login-view-form');
+                                var aV = document.getElementById('login-view-authenticated');
+                                var nE = document.getElementById('auth-display-name');
+                                if (lF) lF.style.display = 'none';
+                                if (aV) aV.style.display = 'block';
+                                if (nE) nE.innerText = u;
+                            }
+                        } catch(e){}
+                    })();
+                </script>
             </div>
 
             <!-- Tab 4: לוח תוצאות (Leaderboard) -->
