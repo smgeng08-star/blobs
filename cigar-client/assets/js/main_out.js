@@ -45,12 +45,25 @@
             osc.start(now);
             osc.stop(now + 0.4);
         } else if (type === 'death') {
-            // Iconic Arcade 8-bit "Game Over" 4-note descending melody (D4 -> C4 -> B3 -> G#3/G3)
+            // 1. Spoken voice announcement "Game Over"
+            try {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    var utter = new SpeechSynthesisUtterance("Game Over");
+                    utter.lang = 'en-US';
+                    utter.rate = 0.88;
+                    utter.pitch = 0.75;
+                    utter.volume = Math.max(0.1, wHandle.soundVolume);
+                    window.speechSynthesis.speak(utter);
+                }
+            } catch(e){}
+
+            // 2. Accompanying classic arcade defeat undertone
             var notes = [
                 { f: 293.66, t: 0.00, d: 0.16 }, // D4
                 { f: 261.63, t: 0.16, d: 0.16 }, // C4
                 { f: 246.94, t: 0.32, d: 0.16 }, // B3
-                { f: 196.00, t: 0.48, d: 0.45 }  // G3 (long resonant finish)
+                { f: 196.00, t: 0.48, d: 0.45 }  // G3 (resonant tail)
             ];
 
             notes.forEach(function(n) {
@@ -58,18 +71,13 @@
                 var gain = ctx.createGain();
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(n.f, now + n.t);
-                
-                // Add retro arcade slide down on the last note
                 if (n.t >= 0.48) {
                     osc.frequency.exponentialRampToValueAtTime(140, now + n.t + n.d);
                 }
-
-                gain.gain.setValueAtTime(0.38, now + n.t);
+                gain.gain.setValueAtTime(0.28, now + n.t);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
-
                 osc.connect(gain);
                 gain.connect(masterGain);
-
                 osc.start(now + n.t);
                 osc.stop(now + n.t + n.d + 0.02);
             });
