@@ -147,6 +147,36 @@ NodeHandler.prototype.update = function() {
         }
         var tCCe = process.hrtime(tCCs);
         tCCS += getTime(tCCe);
+
+        // Check for serverResetMass (e.g. 100,000 mass reset condition)
+        if (this.gameServer.config.serverResetMass && !this.gameServer.isResetting) {
+            var totalScore = client.getScore(true);
+            if (totalScore >= this.gameServer.config.serverResetMass) {
+                this.gameServer.isResetting = true;
+                var winnerName = client.name || "שחקן";
+                var announceMsg = "[שרת] השחקן " + winnerName + " הגיע ל-" + this.gameServer.config.serverResetMass.toLocaleString() + " מסה! השרת מתאפס עכשיו...";
+                console.log("[Auto-Reset] " + announceMsg);
+                
+                var pHandler = require('./PacketHandler');
+                var Packet = require('./packet');
+                for (var ci = 0; ci < this.gameServer.clients.length; ci++) {
+                    var cl = this.gameServer.clients[ci];
+                    if (cl && cl.sendPacket) {
+                        cl.sendPacket(new Packet.ChatMessage(0, 0, announceMsg));
+                    }
+                }
+                
+                var selfGs = this.gameServer;
+                setTimeout(function() {
+                    try {
+                        selfGs.restartGame();
+                    } catch(e) {
+                        console.error("[Auto-Reset] Error restarting game: ", e);
+                    }
+                    selfGs.isResetting = false;
+                }, 1000);
+            }
+        }
     }
     var tCe = process.hrtime(tCs),
         tC3s = process.hrtime();

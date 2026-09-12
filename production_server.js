@@ -487,7 +487,7 @@ gameServer3.config.playerRecombineTime = 0; // Instant recombine (0 seconds - me
 gameServer3.config.ejectMass = 7; // Lower mass per W (7 mass per feed instead of 15/30)
 gameServer3.config.ejectMassLoss = 0; // 0 mass loss on shooting W (every W eaten grows you!)
 gameServer3.config.ejectMassCooldown = 10; // Fast W
-gameServer3.config.ejectSpeed = 160; // Long distance eject for pop-splits
+gameServer3.config.serverResetMass = 100000; // Auto-reset server when any player hits 100,000 mass
 gameServer3.config.serverBots = 5; // 5 bots
 gameServer3.gameMode = gameServer3.pluginHandler.gamemodes.retrieveGamemode(0);
 gameServer3.start();
