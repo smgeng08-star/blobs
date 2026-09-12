@@ -61,7 +61,8 @@
             $select.empty();
             $select.append($('<option>', { value: host1, text: '[שרת] נסיוני אתגרי (0/90)' }));
             $select.append($('<option>', { value: host2, text: '[שרת] קלאסי (0/90)' }));
-            $select.append($('<option>', { value: host3, text: '[שרת] סלף פיד מהיר (0/90)' }));
+            $select.append($('<option>', { value: host3, text: '[שרת] סלף פיד (0/90)' }));
+            $select.append($('<option>', { value: '', text: '✨ שרתים נוספים יעלו בקרוב!', disabled: true }));
 
             if (typeof setServer === 'function') setServer(host1);
         });
@@ -141,10 +142,11 @@
 
                 <!-- Server Select Dropdown -->
                 <div style="margin-bottom:14px;">
-                    <select id="gamemode" class="form-control" onchange="setServer($(this).val())" style="width:100%; border:1.5px solid #e2e8f0; border-radius:10px; padding:8px 12px; font-size:13.5px; font-weight:800; color:#1e293b; background:#f8fafc; height:40px; direction:rtl; outline:none; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.02); transition:border 0.15s ease;">
+                    <select id="gamemode" class="form-control" onchange="if ($(this).val()) setServer($(this).val())" style="width:100%; border:1.5px solid #e2e8f0; border-radius:10px; padding:8px 12px; font-size:13.5px; font-weight:800; color:#1e293b; background:#f8fafc; height:40px; direction:rtl; outline:none; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.02); transition:border 0.15s ease;">
                         <option value="127.0.0.1:3000" selected>[שרת] נסיוני אתגרי (0/90)</option>
                         <option value="127.0.0.1:3001">[שרת] קלאסי (0/90)</option>
-                        <option value="127.0.0.1:3002">[שרת] סלף פיד מהיר (0/90)</option>
+                        <option value="127.0.0.1:3002">[שרת] סלף פיד (0/90)</option>
+                        <option value="" disabled style="color:#64748b; font-weight:bold;">✨ שרתים נוספים יעלו בקרוב!</option>
                     </select>
                 </div>
 
@@ -963,7 +965,7 @@
                     }
                     if (data && data.server3) {
                         var opt3 = document.querySelector('#gamemode option:nth-child(3)');
-                        if (opt3) opt3.text = '[שרת] סלף פיד מהיר (' + (data.server3.count || 0) + '/' + (data.server3.max || 90) + ')';
+                        if (opt3) opt3.text = '[שרת] סלף פיד (' + (data.server3.count || 0) + '/' + (data.server3.max || 90) + ')';
                     }
                 })
                 .catch(function(e) {});
