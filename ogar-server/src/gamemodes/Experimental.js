@@ -103,19 +103,19 @@ MotherCell.prototype.eat = function() {
     var baseMass = 200;
     var foodMass = this.gameServer.config.foodMass || 1;
 
-    // RAPID DISCHARGE & SHRINKING BACK TO BASE SIZE:
-    // When mass > baseMass (200), shoots out normal food pellets and shrinks until returning to base size
+    // BALANCED DYNAMIC DISCHARGE & SMOOTH SHRINKING:
+    // When mass > baseMass (200), shoots out normal food pellets at a smooth, balanced rate
     if (this.mass > baseMass) {
         var excess = this.mass - baseMass;
-        // Scales emission rate with size: 4 to 35 pellets per tick when giant
-        var pelletsToEmit = Math.max(3, Math.min(Math.floor(excess * 0.08) + 2, 35));
+        // Balanced emission curve: 1 to 10 pellets per tick (smooth and visible flow, not instant spray)
+        var pelletsToEmit = Math.max(1, Math.min(Math.floor(excess * 0.02) + 1, 10));
         pelletsToEmit = Math.min(pelletsToEmit, excess);
 
         for (var k = 0; k < pelletsToEmit; k++) {
             this.spawnFood();
         }
 
-        // Subtract emitted mass so the virus visibly shrinks each tick
+        // Subtract emitted mass so the virus visibly shrinks smoothly each tick
         this.mass -= (pelletsToEmit * foodMass);
         if (this.mass < baseMass) this.mass = baseMass;
         this.gameServer.quadTree.update(this);
@@ -191,8 +191,8 @@ MotherCell.prototype.checkEatCell = function(check, gameServer) {
                 var absorbedMass = Math.floor(check.mass * 0.75);
                 this.mass += absorbedMass;
                 
-                // Immediate initial burst of normal food pellets shot outward
-                var initialBurst = Math.min(20, Math.max(4, Math.floor(absorbedMass * 0.08)));
+                // Balanced initial burst of normal food pellets shot outward (max 8 pellets)
+                var initialBurst = Math.min(8, Math.max(2, Math.floor(absorbedMass * 0.02)));
                 for (var b = 0; b < initialBurst; b++) {
                     this.spawnFood();
                 }
