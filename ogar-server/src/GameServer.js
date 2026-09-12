@@ -158,9 +158,7 @@ GameServer.prototype.start = function() {
     this.socketServer = new WebSocket.Server({
         port: this.config.serverPort,
         perMessageDeflate: false
-    }, function() {
-        this.initServerAfterListen();
-    }.bind(this));
+    });
 
     this.initWebSocketHandlers();
 };
