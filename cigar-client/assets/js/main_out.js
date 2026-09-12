@@ -916,7 +916,11 @@
         msg.setUint8(0, 255);
         msg.setUint32(1, 1332175218, 1);
         wsSend(msg);
-        sendNickName();
+        if (wHandle.isSpectating) {
+            sendUint8(1);
+        } else if (userNickName) {
+            sendNickName();
+        }
     }
     function onWsClose() {
         setTimeout(showConnecting, delay);
@@ -1859,8 +1863,14 @@
         wHandle.isFreeRoam = 0;
         wHandle.firstSpecFrame = 0;
         userNickName = arg;
-        sendNickName();
         userScore = 0;
+
+        if (!wsIsOpen()) {
+            showConnecting();
+        } else {
+            sendNickName();
+        }
+
         if (typeof wHandle.playGameSound === 'function') {
             wHandle.playGameSound('start');
         }
@@ -1954,8 +1964,13 @@
         wHandle.firstSpecFrame = 1;
         wHandle.isFreeRoam = 0;
         playerCells = [];
-        sendUint8(1);
         hideOverlays();
+
+        if (!wsIsOpen()) {
+            showConnecting();
+        } else {
+            sendUint8(1);
+        }
     };
     wHandle.setGameMode = function(arg) {
         if (arg != gameMode) {
