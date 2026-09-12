@@ -9,11 +9,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link href="assets/css/bootstrap.min.css?v=20260912_09" rel="stylesheet">
-    <link href="assets/css/index.css?v=20260912_09" rel="stylesheet">
+    <link href="assets/css/bootstrap.min.css?v=20260912_10" rel="stylesheet">
+    <link href="assets/css/index.css?v=20260912_10" rel="stylesheet">
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/vector.js?v=20260912_09"></script>
-    <script src="assets/js/main_out.js?v=20260912_09"></script>
+    <script src="assets/js/vector.js?v=20260912_10"></script>
+    <script src="assets/js/main_out.js?v=20260912_10"></script>
     <script>
         $(function() {
             $('#overlays').show();
@@ -102,14 +102,14 @@
                             <span>צלילים</span>
                             <span class="blobs-badge-val" id="vol-sound-val">100</span>
                         </div>
-                        <input type="range" min="0" max="100" value="100" style="width:100%; height:4px; accent-color:#0096e6; cursor:pointer;" oninput="$('#vol-sound-val').text(this.value)">
+                        <input type="range" id="vol-sound-slider" min="0" max="100" value="100" style="width:100%; height:4px; accent-color:#0096e6; cursor:pointer;" oninput="updateSoundVol(this.value)">
                     </div>
                     <div class="blobs-vol-item">
                         <div class="blobs-vol-header">
                             <span>אפקטים</span>
                             <span class="blobs-badge-val" id="vol-fx-val">100</span>
                         </div>
-                        <input type="range" min="0" max="100" value="100" style="width:100%; height:4px; accent-color:#0096e6; cursor:pointer;" oninput="$('#vol-fx-val').text(this.value)">
+                        <input type="range" id="vol-fx-slider" min="0" max="100" value="100" style="width:100%; height:4px; accent-color:#0096e6; cursor:pointer;" oninput="updateSoundVol(this.value)">
                     </div>
                 </div>
 
@@ -1272,10 +1272,31 @@
             }
         }
 
+        function updateSoundVol(val) {
+            val = parseInt(val);
+            if (isNaN(val)) val = 100;
+            $('#vol-sound-val').text(val);
+            $('#vol-fx-val').text(val);
+            $('#vol-sound-slider').val(val);
+            $('#vol-fx-slider').val(val);
+            try { localStorage.setItem('blobz_sound_volume', val); } catch(e){}
+            if (typeof setSoundVolume === 'function') {
+                setSoundVolume(val / 100);
+            }
+        }
+
         // Initialize state on load
         window.addEventListener('load', function() {
             try {
                 updateAuthUI();
+
+                // Restore saved sound volume
+                var savedVol = 100;
+                try {
+                    var v = localStorage.getItem('blobz_sound_volume');
+                    if (v !== null) savedVol = parseInt(v);
+                } catch(e){}
+                updateSoundVol(savedVol);
 
                 // Sync current user skin to server on load so other browsers/guests see it
                 var loggedUser = localStorage.getItem('blobz_logged_user');

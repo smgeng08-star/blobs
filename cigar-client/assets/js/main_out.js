@@ -2,6 +2,113 @@
     /*global navigator, Image, $*/
     var CONNECTION_URL = ""; // Default to window.location.host
     var SKIN_URL = "./skins/"; // Skins Directory
+
+    // --- Blobs Audio Sound System (Web Audio API - Zero latency, pure synth) ---
+    var audioCtx = null;
+    function getAudioCtx() {
+        if (!audioCtx) {
+            var AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) audioCtx = new AudioContext();
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        return audioCtx;
+    }
+
+    wHandle.soundVolume = 1.0;
+    wHandle.setSoundVolume = function(vol) {
+        wHandle.soundVolume = Math.max(0, Math.min(1, vol));
+    };
+
+    wHandle.playGameSound = function(type) {
+        if (wHandle.soundVolume <= 0) return;
+        var ctx = getAudioCtx();
+        if (!ctx) return;
+        var now = ctx.currentTime;
+        var masterGain = ctx.createGain();
+        masterGain.gain.setValueAtTime(wHandle.soundVolume, now);
+        masterGain.connect(ctx.destination);
+
+        if (type === 'start') {
+            // Uplifting, crisp spawn chime
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(260, now);
+            osc.frequency.exponentialRampToValueAtTime(540, now + 0.18);
+            osc.frequency.exponentialRampToValueAtTime(820, now + 0.35);
+            gain.gain.setValueAtTime(0.35, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now);
+            osc.stop(now + 0.4);
+        } else if (type === 'death') {
+            // Deep descending resonant defeat tone
+            var osc1 = ctx.createOscillator();
+            var osc2 = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc1.type = 'sawtooth';
+            osc2.type = 'sine';
+            osc1.frequency.setValueAtTime(180, now);
+            osc1.frequency.exponentialRampToValueAtTime(45, now + 0.55);
+            osc2.frequency.setValueAtTime(90, now);
+            osc2.frequency.exponentialRampToValueAtTime(30, now + 0.6);
+            gain.gain.setValueAtTime(0.4, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+            osc1.connect(gain);
+            osc2.connect(gain);
+            gain.connect(masterGain);
+            osc1.start(now);
+            osc2.start(now);
+            osc1.stop(now + 0.62);
+            osc2.stop(now + 0.62);
+        } else if (type === 'virus') {
+            // Sharp shattering noise burst + pop
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(420, now);
+            osc.frequency.exponentialRampToValueAtTime(110, now + 0.22);
+            gain.gain.setValueAtTime(0.45, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+            // Add short noise pop
+            var bufferSize = ctx.sampleRate * 0.15;
+            var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            var data = buffer.getChannelData(0);
+            for (var i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
+            }
+            var noise = ctx.createBufferSource();
+            noise.buffer = buffer;
+            var noiseGain = ctx.createGain();
+            noiseGain.gain.setValueAtTime(0.35, now);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+            noise.connect(noiseGain);
+            noiseGain.connect(masterGain);
+            noise.start(now);
+
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now);
+            osc.stop(now + 0.26);
+        } else if (type === 'chat') {
+            // Elegant bright ping/blip
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, now);
+            osc.frequency.exponentialRampToValueAtTime(1320, now + 0.08);
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now);
+            osc.stop(now + 0.18);
+        }
+    };
     wHandle.setServer = function(arg) {
         if (arg != gameMode) {
             CONNECTION_URL = arg;
@@ -921,6 +1028,9 @@
             "message": getString(),
             "time": Date.now()
         });
+        if (typeof wHandle.playGameSound === 'function') {
+            wHandle.playGameSound('chat');
+        }
         drawChatBoard();
     }
     function drawChatBoard() {
@@ -984,6 +1094,10 @@
             var killedNode = nodes[killedId];
             if (killedNode) {
                 var wasPlayerCell = (-1 != playerCells.indexOf(killedNode));
+                var isVirusEaten = killedNode.isVirus || (killer && killer.isVirus);
+                if (isVirusEaten && typeof wHandle.playGameSound === 'function') {
+                    wHandle.playGameSound('virus');
+                }
                 killedNode.destroy();
                 if (killer && (killedNode.size > 22 || killedNode.name || killedNode.isVirus)) {
                     killedNode.ox = killedNode.x;
@@ -1085,7 +1199,12 @@
             node = nodes[nodeId];
             null != node && node.destroy();
         }
-        ua && 0 == playerCells.length && showOverlays(0);
+        if (ua && 0 == playerCells.length) {
+            if (typeof wHandle.playGameSound === 'function') {
+                wHandle.playGameSound('death');
+            }
+            showOverlays(0);
+        }
     }
     function sendMouseMove() {
         var msg;
@@ -1649,6 +1768,9 @@
         userNickName = arg;
         sendNickName();
         userScore = 0;
+        if (typeof wHandle.playGameSound === 'function') {
+            wHandle.playGameSound('start');
+        }
     };
     wHandle.setSkins = function(arg) {
         showSkin = arg;
