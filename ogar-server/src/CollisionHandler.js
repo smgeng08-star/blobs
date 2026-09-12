@@ -141,14 +141,15 @@ CollisionHandler.prototype.canEat = function(cell, check) {
 
     if (isOwnCell) {
         // Can only merge if merge override is on OR if recombine time has passed
-        if (!cell.owner.mergeOverride) {
+        if (this.gameServer.config.playerRecombineTime === 0 || cell.owner.mergeOverride) {
+            // Instant recombine mode (e.g. Self-Feed server) - merge immediately as cells touch!
+        } else {
             if (!cell.shouldRecombine || !check.shouldRecombine || cell.collisionRestoreTicks > 0 || check.collisionRestoreTicks > 0) return false;
         }
-        // When merging is allowed, merge when one cell overlaps the other deeply
+        // Merge when cells touch/overlap
         var r1 = cell.getSize();
         var r2 = check.getSize();
-        var maxEatDist = r1 - (r2 * 0.35);
-        if (maxEatDist <= 0) maxEatDist = r1;
+        var maxEatDist = r1 + r2 * 0.2; // Smooth and immediate reconnection
         return dist <= maxEatDist * maxEatDist;
     }
 
