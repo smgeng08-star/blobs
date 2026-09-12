@@ -603,6 +603,9 @@ GameServer.prototype.getStats = function() {
         'uptime': Math.round((new Date().getTime() - this.startTime) / 1000 / 60) + " m",
         'start_time': this.startTime
     };
+    this.stats = JSON.stringify(s);
+};
+
 GameServer.prototype.restartGame = function() {
     // 1. Remove all nodes and clear world
     var Packet = require('./packet');
