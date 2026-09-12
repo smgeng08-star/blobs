@@ -72,9 +72,15 @@ function MotherCell() {
     this.isMotherCell = true;
     this.ownedFood = [];
     this.spawnTick = 0;
+    this.heldMass = 0; // Buffer of swallowed player/ejected mass to emit
 }
 
 MotherCell.prototype = new Virus();
+
+MotherCell.prototype.getSize = function() {
+    // Red MotherCell always keeps fixed, standard virus size (~141 radius)
+    return Math.sqrt(100 * (this.mass || 200)) >> 0;
+};
 
 MotherCell.prototype.feed = function(feeder) {
     if (!feeder) return;
@@ -82,46 +88,35 @@ MotherCell.prototype.feed = function(feeder) {
     feeder.setKiller(this);
     this.gameServer.removeNode(feeder);
 
-    // 100% of ejected mass is absorbed and will be discharged as food
-    this.mass += (feeder.mass || 12);
+    // 75% of ejected mass is buffered to be discharged as standard food
+    var absorbed = Math.floor((feeder.mass || 12) * 0.75);
+    this.heldMass += absorbed;
     this.spawnFood();
-    this.gameServer.quadTree.update(this);
 };
 
 MotherCell.prototype.eat = function() {
     this.spawnTick++;
 
     // Clean up dead/eaten food pellets from array periodically
-    if (this.spawnTick % 25 === 0) {
+    if (this.spawnTick % 20 === 0) {
         this.ownedFood = this.ownedFood.filter(function(f) {
             return f && !f.eaten && !f.destroyed && f.gameServer;
         });
     }
 
-    var baseMass = 200;
     var foodMass = this.gameServer.config.foodMass || 1;
 
-    // BALANCED DYNAMIC DISCHARGE: Releases absorbed mass onto the field as eatable pellets
-    if (this.mass > baseMass) {
-        var excess = this.mass - baseMass;
-        
-        // Ejection rate: scales with excess mass, shooting out pellets with proportional mass
-        var numPellets = Math.max(1, Math.min(Math.floor(excess / 40) + 1, 8));
-        // Allocate mass per pellet so at least ~80% of excess is turned into actual eatable mass chunks
-        var massToEject = Math.min(excess, Math.max(numPellets * 2, Math.floor(excess * 0.08) + 3));
-        var massPerPellet = Math.max(1, Math.floor(massToEject / numPellets));
+    // RAPID EMISSION OF ABSORBED MASS AS STANDARD FOOD PELLETS
+    if (this.heldMass > 0) {
+        // Ejection rate: fast spray of standard pellets (e.g. 5 to 40 per tick depending on held mass)
+        var pelletsToEmit = Math.max(4, Math.min(Math.floor(this.heldMass * 0.08) + 2, 40));
+        pelletsToEmit = Math.min(pelletsToEmit, this.heldMass);
 
-        // Clean up or keep within reasonable food count per mothercell
-        if (this.ownedFood.length < 180) {
-            for (var k = 0; k < numPellets; k++) {
-                this.spawnFood(massPerPellet);
-            }
+        for (var k = 0; k < pelletsToEmit; k++) {
+            this.spawnFood();
         }
 
-        // Subtract exact emitted mass from the mother cell
-        this.mass -= (numPellets * massPerPellet);
-        if (this.mass < baseMass) this.mass = baseMass;
-        this.gameServer.quadTree.update(this);
+        this.heldMass -= pelletsToEmit;
     } else {
         // Progressive ambient food production: authentic cap of ~70 pellets per MotherCell (Agar.io / Blobs standard)
         var foodCount = this.ownedFood.length;
@@ -134,7 +129,7 @@ MotherCell.prototype.eat = function() {
             }
 
             if (this.spawnTick % interval === 0) {
-                this.spawnFood(foodMass);
+                this.spawnFood();
             }
         }
     }
@@ -182,7 +177,7 @@ MotherCell.prototype.checkEatCell = function(check, gameServer) {
 
     // Player cell collision
     if (check.cellType == 0) {
-        // If player is smaller than red virus: MotherCell consumes player and absorbs their mass
+        // If player is smaller than red virus: MotherCell consumes player and buffers exactly 75% of mass to emit as standard food
         if (this.mass > check.mass * 1.05) {
             var hitDist = motherRadius + (checkRadius * 0.25);
             if (distSq <= hitDist * hitDist) {
@@ -190,18 +185,17 @@ MotherCell.prototype.checkEatCell = function(check, gameServer) {
                 check.setKiller(this);
                 gameServer.removeNode(check);
 
-                // Add 100% of consumed player mass into the mothercell
-                this.mass += check.mass;
+                // Exactly 75% of swallowed player mass is buffered to shoot out as normal food
+                var massToEject = Math.floor(check.mass * 0.75);
+                this.heldMass += massToEject;
                 
-                // Immediate initial burst of 8-15 pellets carrying a good chunk of mass
-                var burstCount = Math.min(12, Math.max(4, Math.floor(check.mass / 50)));
-                var burstMassPerPellet = Math.max(1, Math.floor((check.mass * 0.25) / burstCount));
-                for (var b = 0; b < burstCount; b++) {
-                    this.spawnFood(burstMassPerPellet);
+                // Immediate initial burst of normal food pellets shot outward
+                var initialBurst = Math.min(25, Math.max(5, Math.floor(massToEject * 0.1)));
+                for (var b = 0; b < initialBurst; b++) {
+                    this.spawnFood();
                 }
-                this.mass -= (burstCount * burstMassPerPellet);
-                if (this.mass < 200) this.mass = 200;
-                gameServer.quadTree.update(this);
+                this.heldMass -= initialBurst;
+                if (this.heldMass < 0) this.heldMass = 0;
             }
         } else if (check.mass > this.mass * 1.15) {
             // Larger player cell eats red virus immediately and pops into pieces!
@@ -216,18 +210,18 @@ MotherCell.prototype.checkEatCell = function(check, gameServer) {
     }
 };
 
-MotherCell.prototype.spawnFood = function(customMass) {
+MotherCell.prototype.spawnFood = function() {
     var angle = Math.random() * 2 * Math.PI;
     var r = this.getSize();
-    // Eject distance: 30 to 80 units outward from virus edge
+    // Eject distance: standard 25 to 70 units outward from virus edge
     var dist = r + 15 + Math.random() * 55;
     var pos = {
         x: this.position.x + (dist * Math.sin(angle)),
         y: this.position.y + (dist * Math.cos(angle))
     };
 
-    var m = customMass || this.gameServer.config.foodMass || 1;
-    var f = new Food(this.gameServer.getNextNodeId(), null, pos, m, this.gameServer);
+    // Standard Agar.io / Blobs food pellet (mass 1, normal size 10)
+    var f = new Food(this.gameServer.getNextNodeId(), null, pos, this.gameServer.config.foodMass || 1, this.gameServer);
     f.setColor(this.gameServer.getRandomColor());
 
     this.ownedFood.push(f);
@@ -239,7 +233,7 @@ MotherCell.prototype.onAdd = function(gameServer) {
     gameServer.gameMode.nodesMother.push(this);
     // Initial surrounding pellets shot outward (standard halo)
     for (var i = 0; i < 18; i++) {
-        this.spawnFood(this.gameServer.config.foodMass || 1);
+        this.spawnFood();
     }
 };
 
