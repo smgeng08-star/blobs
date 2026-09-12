@@ -9,11 +9,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link href="assets/css/bootstrap.min.css?v=20260912_41" rel="stylesheet">
-    <link href="assets/css/index.css?v=20260912_41" rel="stylesheet">
+    <link href="assets/css/bootstrap.min.css?v=20260912_42" rel="stylesheet">
+    <link href="assets/css/index.css?v=20260912_42" rel="stylesheet">
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/vector.js?v=20260912_41"></script>
-    <script src="assets/js/main_out.js?v=20260912_41"></script>
+    <script src="assets/js/vector.js?v=20260912_42"></script>
+    <script src="assets/js/main_out.js?v=20260912_42"></script>
     <script>
         // Instant synchronous auth execution before render
         function quickAuthInit() {
@@ -928,9 +928,13 @@
         window.updateLeaderboardModalTab = updateLeaderboardModalTab;
 
         function updateServerPlayerCount(curr, max) {
-            var opt1 = document.querySelector('#gamemode option:nth-child(1)');
-            if (opt1) {
-                opt1.text = '[שרת] נסיוני אתגרי (' + (curr || 0) + '/' + (max || 90) + ')';
+            var currServerVal = $('#gamemode').val();
+            var isClassic = (currServerVal && currServerVal.indexOf(':3001') !== -1);
+            var selector = isClassic ? '#gamemode option:nth-child(2)' : '#gamemode option:nth-child(1)';
+            var serverName = isClassic ? '[שרת] קלאסי ראשי' : '[שרת] נסיוני אתגרי';
+            var opt = document.querySelector(selector);
+            if (opt) {
+                opt.text = serverName + ' (' + (curr || 0) + '/' + (max || 90) + ')';
             }
         }
         window.updateServerPlayerCount = updateServerPlayerCount;
@@ -941,17 +945,17 @@
                 .then(function(data) {
                     if (data && data.server1) {
                         var opt1 = document.querySelector('#gamemode option:nth-child(1)');
-                        if (opt1) opt1.text = '[שרת] נסיוני אתגרי (' + data.server1.count + '/' + data.server1.max + ')';
+                        if (opt1) opt1.text = '[שרת] נסיוני אתגרי (' + (data.server1.count || 0) + '/' + (data.server1.max || 90) + ')';
                     }
                     if (data && data.server2) {
                         var opt2 = document.querySelector('#gamemode option:nth-child(2)');
-                        if (opt2) opt2.text = '[שרת] קלאסי ראשי (' + data.server2.count + '/' + data.server2.max + ')';
+                        if (opt2) opt2.text = '[שרת] קלאסי ראשי (' + (data.server2.count || 0) + '/' + (data.server2.max || 90) + ')';
                     }
                 })
                 .catch(function(e) {});
         }
-        setInterval(refreshAllServerCounts, 5000);
-        setTimeout(refreshAllServerCounts, 1000);
+        setInterval(refreshAllServerCounts, 3000);
+        setTimeout(refreshAllServerCounts, 500);
 
         // 6 Toggle Settings state tracking (all OFF ✖ by default)
         var blobsSettings = {
