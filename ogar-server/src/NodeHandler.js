@@ -388,6 +388,7 @@ NodeHandler.prototype.ejectMass = function(client) {
             this.gameServer.config.ejectMass,
             this.gameServer
         );
+        ejected.sourceCellId = cell.nodeId; // Track which specific cell shot this mass
         ejected.moveEngine = new Vector(
             Math.sin(angle) * this.gameServer.config.ejectSpeed,
             Math.cos(angle) * this.gameServer.config.ejectSpeed

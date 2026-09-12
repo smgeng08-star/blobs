@@ -90,8 +90,8 @@ CollisionHandler.prototype.canEat = function(cell, check) {
         if (cell.mass < 16) {
             return false;
         }
-        // A cell cannot eat its own freshly ejected mass in the first 5 ticks (125ms) of launch
-        if (check.owner === cell.owner && (check.firstTick || (check.ticksAlive && check.ticksAlive < 5))) {
+        // A cell cannot eat the mass ITSELF just shot in the first 5 ticks (125ms), but OTHER split cells of the same player CAN eat it immediately (Self-Feed)!
+        if (check.owner === cell.owner && check.sourceCellId === cell.nodeId && (check.firstTick || (check.ticksAlive && check.ticksAlive < 5))) {
             return false;
         }
         var r = cell.getSize() + (check.getSize() || 12);
