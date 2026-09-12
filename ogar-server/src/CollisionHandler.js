@@ -140,16 +140,21 @@ CollisionHandler.prototype.canEat = function(cell, check) {
     var isOwnCell = (cell.cellType == 0 && check.cellType == 0 && cell.owner && check.owner && cell.owner.pID == check.owner.pID);
 
     if (isOwnCell) {
-        // Can only merge if merge override is on OR if recombine time has passed
-        if (this.gameServer.config.playerRecombineTime === 0 || cell.owner.mergeOverride) {
-            // Instant recombine mode (e.g. Self-Feed server) - merge immediately as cells touch!
-        } else {
-            if (!cell.shouldRecombine || !check.shouldRecombine || cell.collisionRestoreTicks > 0 || check.collisionRestoreTicks > 0) return false;
+        // While cell is in active split boost / no-collide delay, let it shoot forward first!
+        if (cell.collisionRestoreTicks > 0 || check.collisionRestoreTicks > 0) {
+            return false;
         }
+
+        // When split boost completes:
+        // In instant recombine mode (playerRecombineTime === 0 or mergeOverride), merge immediately!
+        if (this.gameServer.config.playerRecombineTime !== 0 && !cell.owner.mergeOverride) {
+            if (!cell.shouldRecombine || !check.shouldRecombine) return false;
+        }
+
         // Merge when cells touch/overlap
         var r1 = cell.getSize();
         var r2 = check.getSize();
-        var maxEatDist = r1 + r2 * 0.2; // Smooth and immediate reconnection
+        var maxEatDist = r1 + r2 * 0.15; // Clean instant reconnection as they touch
         return dist <= maxEatDist * maxEatDist;
     }
 
