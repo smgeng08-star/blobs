@@ -1064,9 +1064,6 @@
             "message": getString(),
             "time": Date.now()
         });
-        if (typeof wHandle.playGameSound === 'function') {
-            wHandle.playGameSound('chat');
-        }
         drawChatBoard();
     }
     function drawChatBoard() {
