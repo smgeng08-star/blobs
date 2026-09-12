@@ -448,7 +448,8 @@ var server = http.createServer(function(req, res) {
 
 // 2. Initialize GameServer 1 (Experimental / נסיוני אתגרי) on primary HTTP port (3000)
 var gameServer1 = new GameServer();
-gameServer1.config.serverGamemode = 2; // Experimental
+gameServer1.config.serverGamemode = 2; // Experimental (Red mother virus cells active)
+gameServer1.config.playerMaxCells = 32; // Experimental allows up to 32 splits
 gameServer1.gameMode = gameServer1.pluginHandler.gamemodes.retrieveGamemode(2);
 gameServer1.startWithHttpServer(server);
 
@@ -456,7 +457,8 @@ gameServer1.startWithHttpServer(server);
 var CLASSIC_PORT = process.env.CLASSIC_PORT || 3001;
 var gameServer2 = new GameServer();
 gameServer2.config.serverPort = CLASSIC_PORT;
-gameServer2.config.serverGamemode = 0; // Classic FFA
+gameServer2.config.serverGamemode = 0; // Classic FFA (No red mother viruses, standard green viruses only)
+gameServer2.config.playerMaxCells = 16; // Classic FFA maximum 16 splits
 gameServer2.gameMode = gameServer2.pluginHandler.gamemodes.retrieveGamemode(0);
 gameServer2.start();
 
