@@ -101,17 +101,21 @@ MotherCell.prototype.eat = function() {
     var baseMass = 200;
     var foodMass = this.gameServer.config.foodMass || 1;
 
-    // BALANCED DYNAMIC DISCHARGE: Steady, smooth eruption of food as it grows
+    // BALANCED FAST DYNAMIC DISCHARGE: Quick eruption of food when large, returning swiftly to normal
     if (this.mass > baseMass) {
         var excess = this.mass - baseMass;
-        // Energetic discharge curve capped for zero lag
-        var pelletsToEmit = Math.max(2, Math.min(Math.floor(excess * 0.02) + 1, 8));
+        // Fast discharge rate: scales with excess mass, up to 25 pellets per tick when giant
+        var pelletsToEmit = Math.max(3, Math.min(Math.floor(excess * 0.08) + 2, 25));
 
-        for (var k = 0; k < pelletsToEmit; k++) {
+        // Avoid overpopulating screen: only spawn food if owned food count is within limit (< 140)
+        var foodCount = this.ownedFood.length;
+        var spawnPellets = foodCount < 140 ? pelletsToEmit : 0;
+
+        for (var k = 0; k < spawnPellets; k++) {
             this.spawnFood();
         }
 
-        // Subtract exact emitted mass so nothing is lost
+        // Subtract emitted mass (or discharge mass) rapidly
         this.mass -= (pelletsToEmit * foodMass);
         if (this.mass < baseMass) this.mass = baseMass;
         this.gameServer.quadTree.update(this);
@@ -152,7 +156,7 @@ MotherCell.prototype.eat = function() {
 };
 
 MotherCell.prototype.getRange = function() {
-    var sz = this.getSize() * 2;
+    var sz = this.getSize();
     var Rectangle = require('../modules/Rectangle');
     return new Rectangle(this.position.x, this.position.y, sz, sz);
 };

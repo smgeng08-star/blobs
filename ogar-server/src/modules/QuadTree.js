@@ -30,8 +30,10 @@ QuadTree.prototype.add = function(item, split) {
             if (this.branches[2].add(item)) return true;
             if (this.branches[3].add(item)) return true;
 
-            console.log("[Error] Could not add node into quadtree! Node position: " + item.position);
-            return false;
+            // If item spans across multiple branch quadrants, keep it at this node level
+            this.nodes.push(item);
+            item.__quad = this;
+            return true;
         } else {
             this.nodes.push(item);
             item.__quad = this;
@@ -96,23 +98,23 @@ QuadTree.prototype.merge = function() {
 };
 
 QuadTree.prototype.getNodes = function() {
+    var a = this.nodes.slice(0);
     if (this.branches.length > 0) {
-        var a = [];
         a = a.concat(this.branches[0].getNodes());
         a = a.concat(this.branches[1].getNodes());
         a = a.concat(this.branches[2].getNodes());
         a = a.concat(this.branches[3].getNodes());
-        return a;
-    } else return this.nodes.slice(0);
+    }
+    return a;
 };
 
 QuadTree.prototype.getBranches = function() {
     if (this.branches.length > 0) {
         var a = 1;
+        a += this.branches[0].getBranches();
         a += this.branches[1].getBranches();
-        a += this.branches[1].getBranches();
-        a += this.branches[1].getBranches();
-        a += this.branches[1].getBranches();
+        a += this.branches[2].getBranches();
+        a += this.branches[3].getBranches();
         return a;
     } else return 1;
 };
@@ -128,21 +130,22 @@ QuadTree.prototype.clear = function() {
 QuadTree.prototype.query = function(range, predicate, outItems) {
     var items = outItems || [];
     var givenPredicate = predicate instanceof Function;
+
+    for (var i = 0; i < this.nodes.length; i++) {
+        var node = this.nodes[i];
+        if (!node) continue;
+
+        if (range.intersects(node.getRange())) {
+            if (givenPredicate) {
+                if (predicate(node)) items.push(node);
+            } else items.push(node);
+        }
+    }
+
     if (this.branches.length > 0) {
         for (var b = 0; b < 4; b++) {
             if (this.branches[b].range.intersects(range)) {
                 this.branches[b].query(range, predicate, items);
-            }
-        }
-    } else {
-        for (var i = 0; i < this.nodes.length; i++) {
-            var node = this.nodes[i];
-            if (!node) continue;
-
-            if (range.intersects(node.getRange())) {
-                if (givenPredicate) {
-                    if (predicate(node)) items.push(node);
-                } else items.push(node);
             }
         }
     }
