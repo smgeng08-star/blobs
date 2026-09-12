@@ -1142,21 +1142,20 @@
                 currentX += nameWidth;
             }
 
-            // Message text column: glowing bright white (#ffffff) with black outline
+            // Message text column: White text with authentic thick black outline around every letter
             var msgX = Math.max(currentX + 20, 215);
             var msgText = item.message || '';
 
-            // Black outline
-            ctx.lineWidth = 3.5;
+            // Solid heavy black outline around every glyph
+            ctx.lineWidth = 4;
+            ctx.lineJoin = 'round';
+            ctx.miterLimit = 2;
             ctx.strokeStyle = '#000000';
             ctx.strokeText(msgText, msgX, yPos + 15);
 
-            // Glowing pure white fill
-            ctx.shadowColor = 'rgba(255, 255, 255, 0.85)';
-            ctx.shadowBlur = 4;
+            // Crisp solid white fill
             ctx.fillStyle = '#ffffff';
             ctx.fillText(msgText, msgX, yPos + 15);
-            ctx.fillText(msgText, msgX, yPos + 15); // double fill for vibrant pop
 
             ctx.restore();
         }
