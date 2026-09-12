@@ -107,18 +107,40 @@
             osc.start(now);
             osc.stop(now + 0.26);
         } else if (type === 'chat') {
-            // Elegant bright ping/blip
-            var osc = ctx.createOscillator();
-            var gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(880, now);
-            osc.frequency.exponentialRampToValueAtTime(1320, now + 0.08);
-            gain.gain.setValueAtTime(0.25, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(now);
-            osc.stop(now + 0.18);
+            // Modern, soft pop / subtle message chime (Discord / iOS style bubble pop)
+            var osc1 = ctx.createOscillator();
+            var osc2 = ctx.createOscillator();
+            var gain1 = ctx.createGain();
+            var gain2 = ctx.createGain();
+
+            osc1.type = 'sine';
+            osc2.type = 'sine';
+
+            // High soft dual-tone bubble
+            osc1.frequency.setValueAtTime(523.25, now); // C5
+            osc1.frequency.exponentialRampToValueAtTime(659.25, now + 0.04); // E5
+
+            osc2.frequency.setValueAtTime(783.99, now + 0.04); // G5
+            osc2.frequency.exponentialRampToValueAtTime(1046.50, now + 0.09); // C6
+
+            gain1.gain.setValueAtTime(0.18, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+
+            gain2.gain.setValueAtTime(0.001, now);
+            gain2.gain.setValueAtTime(0.15, now + 0.04);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+            osc1.connect(gain1);
+            gain1.connect(masterGain);
+
+            osc2.connect(gain2);
+            gain2.connect(masterGain);
+
+            osc1.start(now);
+            osc1.stop(now + 0.07);
+
+            osc2.start(now + 0.04);
+            osc2.stop(now + 0.13);
         }
     };
     wHandle.setServer = function(arg) {
