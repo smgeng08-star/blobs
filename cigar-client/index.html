@@ -1082,32 +1082,31 @@
                 return;
             }
 
-            var accounts = {};
-            try { accounts = JSON.parse(localStorage.getItem('blobz_accounts') || '{}'); } catch(e){}
-
-            // Case-insensitive duplicate check
-            var lowerReq = rawUsername.toLowerCase();
-            for (var existingAcc in accounts) {
-                if (existingAcc.toLowerCase() === lowerReq) {
-                    showRegAlert('שם המשתמש כבר קיים במערכת (תפוס גם באותיות גדולות/קטנות)!', false);
+            fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: rawUsername, password: password })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.error) {
+                    showRegAlert(data.error === 'Username already exists' ? 'שם המשתמש כבר תפוס במערכת!' : data.error, false);
                     return;
                 }
-            }
+                showRegAlert('נרשמת בהצלחה בתור ' + rawUsername + '!', true);
+                try {
+                    localStorage.setItem('blobz_logged_user', rawUsername);
+                    localStorage.setItem('blobz_account_mode', 'user');
+                } catch(e){}
 
-            accounts[rawUsername] = { password: password, skin: null, createdAt: Date.now() };
-            try { localStorage.setItem('blobz_accounts', JSON.stringify(accounts)); } catch(e){}
-
-            showRegAlert('נרשמת בהצלחה בתור ' + rawUsername + '!', true);
-
-            try {
-                localStorage.setItem('blobz_logged_user', rawUsername);
-                localStorage.setItem('blobz_account_mode', 'user');
-            } catch(e){}
-
-            updateAuthUI();
-            setTimeout(function() {
-                switchBTab('play');
-            }, 700);
+                updateAuthUI();
+                setTimeout(function() {
+                    switchBTab('play');
+                }, 700);
+            })
+            .catch(function(err) {
+                showRegAlert('שגיאת שרת ברישום', false);
+            });
         }
 
         function handleLoginSubmit() {
@@ -1119,39 +1118,35 @@
                 return;
             }
 
-            var accounts = {};
-            try { accounts = JSON.parse(localStorage.getItem('blobz_accounts') || '{}'); } catch(e){}
-
-            // Case-insensitive lookup
-            var matchedAccountKey = null;
-            var lowerReq = rawUsername.toLowerCase();
-            for (var existingAcc in accounts) {
-                if (existingAcc.toLowerCase() === lowerReq) {
-                    matchedAccountKey = existingAcc;
-                    break;
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: rawUsername, password: password })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.error) {
+                    showLoginAlert('שם משתמש או סיסמה שגויים!', false);
+                    return;
                 }
-            }
+                showLoginAlert('התחברת בהצלחה בתור ' + (data.username || rawUsername) + '!', true);
+                try {
+                    localStorage.setItem('blobz_logged_user', data.username || rawUsername);
+                    localStorage.setItem('blobz_account_mode', 'user');
+                    if (data.skin) {
+                        localStorage.setItem('blobz_skin_' + (data.username || rawUsername), data.skin);
+                        if (typeof window.setCustomSkin === 'function') window.setCustomSkin(data.skin);
+                    }
+                } catch(e){}
 
-            if (!matchedAccountKey || !accounts[matchedAccountKey]) {
-                showLoginAlert('שם המשתמש לא נמצא במערכת!', false);
-                return;
-            }
-            if (accounts[matchedAccountKey].password !== password) {
-                showLoginAlert('סיסמה שגויה!', false);
-                return;
-            }
-
-            showLoginAlert('התחברת בהצלחה בתור ' + matchedAccountKey + '!', true);
-
-            try {
-                localStorage.setItem('blobz_logged_user', matchedAccountKey);
-                localStorage.setItem('blobz_account_mode', 'user');
-            } catch(e){}
-
-            updateAuthUI();
-            setTimeout(function() {
-                switchBTab('play');
-            }, 700);
+                updateAuthUI();
+                setTimeout(function() {
+                    switchBTab('play');
+                }, 700);
+            })
+            .catch(function(err) {
+                showLoginAlert('שגיאה בהתחברות לשרת', false);
+            });
         }
 
         function logoutUser() {
@@ -1297,6 +1292,21 @@
                     if (v !== null) savedVol = parseInt(v);
                 } catch(e){}
                 updateSoundVol(savedVol);
+
+                // Load registered accounts and logged in state from server
+                fetch('/api/accounts')
+                    .then(function(r) { return r.json(); })
+                    .then(function(serverAccs) {
+                        if (serverAccs) {
+                            try {
+                                var localAccs = JSON.parse(localStorage.getItem('blobz_accounts') || '{}');
+                                var merged = Object.assign({}, localAccs, serverAccs);
+                                localStorage.setItem('blobz_accounts', JSON.stringify(merged));
+                            } catch(e){}
+                            updateAuthUI();
+                        }
+                    })
+                    .catch(function(){});
 
                 // Sync current user skin to server on load so other browsers/guests see it
                 var loggedUser = localStorage.getItem('blobz_logged_user');
