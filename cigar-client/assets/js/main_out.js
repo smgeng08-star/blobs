@@ -45,42 +45,12 @@
             osc.start(now);
             osc.stop(now + 0.4);
         } else if (type === 'death') {
-            // 1. Spoken voice announcement "Game Over"
+            // Play exact Game Over audio clip from assets/audio/gameover.mp3
             try {
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                    var utter = new SpeechSynthesisUtterance("Game Over");
-                    utter.lang = 'en-US';
-                    utter.rate = 0.88;
-                    utter.pitch = 0.75;
-                    utter.volume = Math.max(0.1, wHandle.soundVolume);
-                    window.speechSynthesis.speak(utter);
-                }
+                var audio = new Audio('assets/audio/gameover.mp3?v=1');
+                audio.volume = Math.max(0, Math.min(1, wHandle.soundVolume));
+                audio.play().catch(function(){});
             } catch(e){}
-
-            // 2. Accompanying classic arcade defeat undertone
-            var notes = [
-                { f: 293.66, t: 0.00, d: 0.16 }, // D4
-                { f: 261.63, t: 0.16, d: 0.16 }, // C4
-                { f: 246.94, t: 0.32, d: 0.16 }, // B3
-                { f: 196.00, t: 0.48, d: 0.45 }  // G3 (resonant tail)
-            ];
-
-            notes.forEach(function(n) {
-                var osc = ctx.createOscillator();
-                var gain = ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(n.f, now + n.t);
-                if (n.t >= 0.48) {
-                    osc.frequency.exponentialRampToValueAtTime(140, now + n.t + n.d);
-                }
-                gain.gain.setValueAtTime(0.28, now + n.t);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
-                osc.connect(gain);
-                gain.connect(masterGain);
-                osc.start(now + n.t);
-                osc.stop(now + n.t + n.d + 0.02);
-            });
         } else if (type === 'virus') {
             // Sharp shattering noise burst + pop
             var osc = ctx.createOscillator();
