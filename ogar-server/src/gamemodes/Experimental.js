@@ -77,21 +77,17 @@ function MotherCell() {
 
 MotherCell.prototype = new Virus();
 
-MotherCell.prototype.getSize = function() {
-    // Red MotherCell always keeps fixed, standard virus size (~141 radius)
-    return Math.sqrt(100 * (this.mass || 200)) >> 0;
-};
-
 MotherCell.prototype.feed = function(feeder) {
     if (!feeder) return;
     feeder.inRange = true;
     feeder.setKiller(this);
     this.gameServer.removeNode(feeder);
 
-    // 75% of ejected mass is buffered to be discharged as standard food
+    // 75% of ejected mass is absorbed, making it grow and immediately discharge
     var absorbed = Math.floor((feeder.mass || 12) * 0.75);
-    this.heldMass += absorbed;
+    this.mass += absorbed;
     this.spawnFood();
+    this.gameServer.quadTree.update(this);
 };
 
 MotherCell.prototype.eat = function() {
@@ -104,19 +100,25 @@ MotherCell.prototype.eat = function() {
         });
     }
 
+    var baseMass = 200;
     var foodMass = this.gameServer.config.foodMass || 1;
 
-    // RAPID EMISSION OF ABSORBED MASS AS STANDARD FOOD PELLETS
-    if (this.heldMass > 0) {
-        // Ejection rate: fast spray of standard pellets (e.g. 5 to 40 per tick depending on held mass)
-        var pelletsToEmit = Math.max(4, Math.min(Math.floor(this.heldMass * 0.08) + 2, 40));
-        pelletsToEmit = Math.min(pelletsToEmit, this.heldMass);
+    // RAPID DISCHARGE & SHRINKING BACK TO BASE SIZE:
+    // When mass > baseMass (200), shoots out normal food pellets and shrinks until returning to base size
+    if (this.mass > baseMass) {
+        var excess = this.mass - baseMass;
+        // Scales emission rate with size: 4 to 35 pellets per tick when giant
+        var pelletsToEmit = Math.max(3, Math.min(Math.floor(excess * 0.08) + 2, 35));
+        pelletsToEmit = Math.min(pelletsToEmit, excess);
 
         for (var k = 0; k < pelletsToEmit; k++) {
             this.spawnFood();
         }
 
-        this.heldMass -= pelletsToEmit;
+        // Subtract emitted mass so the virus visibly shrinks each tick
+        this.mass -= (pelletsToEmit * foodMass);
+        if (this.mass < baseMass) this.mass = baseMass;
+        this.gameServer.quadTree.update(this);
     } else {
         // Progressive ambient food production: authentic cap of ~70 pellets per MotherCell (Agar.io / Blobs standard)
         var foodCount = this.ownedFood.length;
@@ -177,7 +179,7 @@ MotherCell.prototype.checkEatCell = function(check, gameServer) {
 
     // Player cell collision
     if (check.cellType == 0) {
-        // If player is smaller than red virus: MotherCell consumes player and buffers exactly 75% of mass to emit as standard food
+        // If player is smaller than red virus: MotherCell consumes player, grows by 75% of player's mass, and begins shrinking/ejecting
         if (this.mass > check.mass * 1.05) {
             var hitDist = motherRadius + (checkRadius * 0.25);
             if (distSq <= hitDist * hitDist) {
@@ -185,17 +187,18 @@ MotherCell.prototype.checkEatCell = function(check, gameServer) {
                 check.setKiller(this);
                 gameServer.removeNode(check);
 
-                // Exactly 75% of swallowed player mass is buffered to shoot out as normal food
-                var massToEject = Math.floor(check.mass * 0.75);
-                this.heldMass += massToEject;
+                // Absorb exactly 75% of consumed player mass into the virus (grows huge!)
+                var absorbedMass = Math.floor(check.mass * 0.75);
+                this.mass += absorbedMass;
                 
                 // Immediate initial burst of normal food pellets shot outward
-                var initialBurst = Math.min(25, Math.max(5, Math.floor(massToEject * 0.1)));
+                var initialBurst = Math.min(20, Math.max(4, Math.floor(absorbedMass * 0.08)));
                 for (var b = 0; b < initialBurst; b++) {
                     this.spawnFood();
                 }
-                this.heldMass -= initialBurst;
-                if (this.heldMass < 0) this.heldMass = 0;
+                this.mass -= (initialBurst * (gameServer.config.foodMass || 1));
+                if (this.mass < 200) this.mass = 200;
+                gameServer.quadTree.update(this);
             }
         } else if (check.mass > this.mass * 1.15) {
             // Larger player cell eats red virus immediately and pops into pieces!
