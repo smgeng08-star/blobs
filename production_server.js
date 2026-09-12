@@ -1,4 +1,4 @@
-﻿var http = require('http');
+var http = require('http');
 var path = require('path');
 var fs = require('fs');
 
@@ -333,6 +333,40 @@ var server = http.createServer(function(req, res) {
                 }
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ success: found }));
+            } catch(e) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: e.message }));
+            }
+        });
+        return;
+    }
+
+    if (reqUrl === '/api/admin/removebots' && req.method === 'POST') {
+        var body = '';
+        req.on('data', function(chunk) { body += chunk; });
+        req.on('end', function() {
+            try {
+                var data = JSON.parse(body || '{}');
+                var pID = data.pID;
+                var removedCount = 0;
+
+                for (var cIdx = gameServer.clients.length - 1; cIdx >= 0; cIdx--) {
+                    var cl = gameServer.clients[cIdx];
+                    if (cl && cl.playerTracker && cl.playerTracker.isMinion && cl.playerTracker.owner) {
+                        if (cl.playerTracker.owner.pID === pID || cl.playerTracker.owner.name === data.name) {
+                            if (cl.playerTracker.cells && cl.playerTracker.cells.length > 0) {
+                                for (var cc = cl.playerTracker.cells.length - 1; cc >= 0; cc--) {
+                                    gameServer.removeNode(cl.playerTracker.cells[cc]);
+                                }
+                                cl.playerTracker.cells = [];
+                            }
+                            if (typeof cl.close === 'function') cl.close();
+                            removedCount++;
+                        }
+                    }
+                }
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, count: removedCount }));
             } catch(e) {
                 res.writeHead(400, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ error: e.message }));

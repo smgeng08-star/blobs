@@ -9,11 +9,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link href="assets/css/bootstrap.min.css?v=20260912_22" rel="stylesheet">
-    <link href="assets/css/index.css?v=20260912_22" rel="stylesheet">
+    <link href="assets/css/bootstrap.min.css?v=20260912_23" rel="stylesheet">
+    <link href="assets/css/index.css?v=20260912_23" rel="stylesheet">
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/vector.js?v=20260912_22"></script>
-    <script src="assets/js/main_out.js?v=20260912_22"></script>
+    <script src="assets/js/vector.js?v=20260912_23"></script>
+    <script src="assets/js/main_out.js?v=20260912_23"></script>
     <script>
         $(function() {
             $('#overlays').show();
@@ -543,16 +543,34 @@
                 quickBtns.append(b1000).append(b5000).append(bBots);
                 topRow.append(info).append(quickBtns);
 
-                // Custom mass input for this specific player
-                var customRow = $('<div style="display:flex; gap:6px; align-items:center; border-top:1px solid #334155; padding-top:5px; margin-top:2px;"></div>');
-                var customMassInput = $('<input type="number" placeholder="כמות מסה אישית (למשל 3000)..." style="flex:1; background:#0f172a; border:1px solid #475569; border-radius:4px; padding:4px 8px; font-size:11.5px; color:#ffffff; outline:none;" />');
+                // Custom controls row (Custom mass + Custom bots + Remove bots)
+                var customRow = $('<div style="display:flex; flex-direction:column; gap:5px; border-top:1px solid #334155; padding-top:6px; margin-top:2px;"></div>');
+                
+                // Mass input line
+                var massLine = $('<div style="display:flex; gap:6px; align-items:center;"></div>');
+                var customMassInput = $('<input type="number" placeholder="מסה אישית (למשל 3000)..." style="flex:1; background:#0f172a; border:1px solid #475569; border-radius:4px; padding:4px 8px; font-size:11.5px; color:#ffffff; outline:none;" />');
                 var customMassBtn = $('<button type="button" style="background:#38bdf8; border:none; color:#0f172a; border-radius:4px; padding:4px 10px; font-size:11px; font-weight:900; cursor:pointer;">הענק מסה</button>');
                 customMassBtn.on('click', function() {
                     var val = parseInt(customMassInput.val());
                     if (val && val > 0) adminGiveMassToPlayer(p.pID, p.name, val);
                 });
+                massLine.append(customMassInput).append(customMassBtn);
 
-                customRow.append(customMassInput).append(customMassBtn);
+                // Bots input & Remove line
+                var botsLine = $('<div style="display:flex; gap:6px; align-items:center;"></div>');
+                var customBotsInput = $('<input type="number" placeholder="כמות בוטים אישית (למשל 50)..." style="flex:1; background:#0f172a; border:1px solid #475569; border-radius:4px; padding:4px 8px; font-size:11.5px; color:#ffffff; outline:none;" />');
+                var customBotsBtn = $('<button type="button" style="background:linear-gradient(135deg, #10b981, #059669); border:none; color:#ffffff; border-radius:4px; padding:4px 10px; font-size:11px; font-weight:900; cursor:pointer;">שגר בוטים</button>');
+                customBotsBtn.on('click', function() {
+                    var bVal = parseInt(customBotsInput.val());
+                    if (bVal && bVal > 0) adminGiveBotsToPlayer(p.pID, p.name, bVal);
+                });
+                var removeBotsBtn = $('<button type="button" title="הסר את כל הבוטים של שחקן זה" style="background:#451a1a; border:1px solid #ef4444; color:#fca5a5; border-radius:4px; padding:4px 8px; font-size:11px; font-weight:800; cursor:pointer;">הסר בוטים ✖</button>');
+                removeBotsBtn.on('click', function() {
+                    adminRemoveBotsFromPlayer(p.pID, p.name);
+                });
+                botsLine.append(customBotsInput).append(customBotsBtn).append(removeBotsBtn);
+
+                customRow.append(massLine).append(botsLine);
                 row.append(topRow).append(customRow);
                 container.append(row);
             });
@@ -601,6 +619,18 @@
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ pID: pID, name: name, count: count || 25 }),
+                success: function(res) {
+                    refreshAdminPlayersList();
+                }
+            });
+        }
+
+        function adminRemoveBotsFromPlayer(pID, name) {
+            $.ajax({
+                url: '/api/admin/removebots',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ pID: pID, name: name }),
                 success: function(res) {
                     refreshAdminPlayersList();
                 }
