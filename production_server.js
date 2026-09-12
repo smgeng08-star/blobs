@@ -253,24 +253,43 @@ var server = http.createServer(function(req, res) {
         return;
     }
 
+    // API: GET /api/servers/status
+    if (reqUrl === '/api/servers/status' && req.method === 'GET') {
+        var s1Humans = gameServer1 ? gameServer1.getHumanCount() : 0;
+        var s2Humans = gameServer2 ? gameServer2.getHumanCount() : 0;
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            server1: { name: 'נסיוני אתגרי', count: s1Humans, max: 90 },
+            server2: { name: 'קלאסי ראשי', count: s2Humans, max: 90 }
+        }));
+        return;
+    }
+
     // Admin API Endpoints
     if (reqUrl === '/api/admin/players' && req.method === 'GET') {
         var playerList = [];
-        for (var cIdx = 0; cIdx < gameServer.clients.length; cIdx++) {
-            var cl = gameServer.clients[cIdx];
-            if (cl && cl.playerTracker && !cl.fullyDisconnected) {
-                var pt = cl.playerTracker;
-                var totalMass = 0;
-                for (var cc = 0; cc < pt.cells.length; cc++) {
-                    totalMass += (pt.cells[cc].mass || 0);
+        var allServers = [gameServer1, gameServer2];
+        for (var s = 0; s < allServers.length; s++) {
+            var gs = allServers[s];
+            if (!gs) continue;
+            var serverTag = (s === 0) ? 'נסיוני' : 'קלאסי';
+            for (var cIdx = 0; cIdx < gs.clients.length; cIdx++) {
+                var cl = gs.clients[cIdx];
+                if (cl && cl.playerTracker && !cl.fullyDisconnected) {
+                    var pt = cl.playerTracker;
+                    var totalMass = 0;
+                    for (var cc = 0; cc < pt.cells.length; cc++) {
+                        totalMass += (pt.cells[cc].mass || 0);
+                    }
+                    playerList.push({
+                        pID: pt.pID,
+                        name: pt.name || 'שחקן אנונימי',
+                        server: serverTag,
+                        cells: pt.cells.length,
+                        mass: Math.round(totalMass),
+                        isBot: !!pt.isBot
+                    });
                 }
-                playerList.push({
-                    pID: pt.pID,
-                    name: pt.name || 'שחקן אנונימי',
-                    cells: pt.cells.length,
-                    mass: Math.round(totalMass),
-                    isBot: !!pt.isBot
-                });
             }
         }
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -288,16 +307,22 @@ var server = http.createServer(function(req, res) {
                 var mass = parseInt(data.mass) || 1000;
                 var found = false;
 
-                for (var cIdx = 0; cIdx < gameServer.clients.length; cIdx++) {
-                    var cl = gameServer.clients[cIdx];
-                    if (cl && cl.playerTracker && (cl.playerTracker.pID === pID || cl.playerTracker.name === data.name)) {
-                        var pt = cl.playerTracker;
-                        if (pt.cells.length > 0) {
-                            pt.cells[0].mass += mass;
+                var allServers = [gameServer1, gameServer2];
+                for (var s = 0; s < allServers.length; s++) {
+                    var gs = allServers[s];
+                    if (!gs) continue;
+                    for (var cIdx = 0; cIdx < gs.clients.length; cIdx++) {
+                        var cl = gs.clients[cIdx];
+                        if (cl && cl.playerTracker && (cl.playerTracker.pID === pID || cl.playerTracker.name === data.name)) {
+                            var pt = cl.playerTracker;
+                            if (pt.cells.length > 0) {
+                                pt.cells[0].mass += mass;
+                            }
+                            found = true;
+                            break;
                         }
-                        found = true;
-                        break;
                     }
+                    if (found) break;
                 }
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ success: found }));
@@ -319,17 +344,23 @@ var server = http.createServer(function(req, res) {
                 var count = parseInt(data.count) || 25;
                 var found = false;
 
-                for (var cIdx = 0; cIdx < gameServer.clients.length; cIdx++) {
-                    var cl = gameServer.clients[cIdx];
-                    if (cl && cl.playerTracker && (cl.playerTracker.pID === pID || cl.playerTracker.name === data.name)) {
-                        var pt = cl.playerTracker;
-                        var bName = pt.name || "Minion";
-                        for (var b = 0; b < count; b++) {
-                            gameServer.bots.addMinion(pt, bName, 10);
+                var allServers = [gameServer1, gameServer2];
+                for (var s = 0; s < allServers.length; s++) {
+                    var gs = allServers[s];
+                    if (!gs) continue;
+                    for (var cIdx = 0; cIdx < gs.clients.length; cIdx++) {
+                        var cl = gs.clients[cIdx];
+                        if (cl && cl.playerTracker && (cl.playerTracker.pID === pID || cl.playerTracker.name === data.name)) {
+                            var pt = cl.playerTracker;
+                            var bName = pt.name || "Minion";
+                            for (var b = 0; b < count; b++) {
+                                gs.bots.addMinion(pt, bName, 10);
+                            }
+                            found = true;
+                            break;
                         }
-                        found = true;
-                        break;
                     }
+                    if (found) break;
                 }
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ success: found }));
@@ -350,18 +381,23 @@ var server = http.createServer(function(req, res) {
                 var pID = data.pID;
                 var removedCount = 0;
 
-                for (var cIdx = gameServer.clients.length - 1; cIdx >= 0; cIdx--) {
-                    var cl = gameServer.clients[cIdx];
-                    if (cl && cl.playerTracker && cl.playerTracker.isMinion && cl.playerTracker.owner) {
-                        if (cl.playerTracker.owner.pID === pID || cl.playerTracker.owner.name === data.name) {
-                            if (cl.playerTracker.cells && cl.playerTracker.cells.length > 0) {
-                                for (var cc = cl.playerTracker.cells.length - 1; cc >= 0; cc--) {
-                                    gameServer.removeNode(cl.playerTracker.cells[cc]);
+                var allServers = [gameServer1, gameServer2];
+                for (var s = 0; s < allServers.length; s++) {
+                    var gs = allServers[s];
+                    if (!gs) continue;
+                    for (var cIdx = gs.clients.length - 1; cIdx >= 0; cIdx--) {
+                        var cl = gs.clients[cIdx];
+                        if (cl && cl.playerTracker && cl.playerTracker.isMinion && cl.playerTracker.owner) {
+                            if (cl.playerTracker.owner.pID === pID || cl.playerTracker.owner.name === data.name) {
+                                if (cl.playerTracker.cells && cl.playerTracker.cells.length > 0) {
+                                    for (var cc = cl.playerTracker.cells.length - 1; cc >= 0; cc--) {
+                                        gs.removeNode(cl.playerTracker.cells[cc]);
+                                    }
+                                    cl.playerTracker.cells = [];
                                 }
-                                cl.playerTracker.cells = [];
+                                if (typeof cl.close === 'function') cl.close();
+                                removedCount++;
                             }
-                            if (typeof cl.close === 'function') cl.close();
-                            removedCount++;
                         }
                     }
                 }
@@ -378,7 +414,10 @@ var server = http.createServer(function(req, res) {
     if (reqUrl === '/api/admin/restart' && req.method === 'POST') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true, message: 'Server restarting...' }));
-        setTimeout(function() { gameServer.restartGame(); }, 100);
+        setTimeout(function() {
+            if (gameServer1) gameServer1.restartGame();
+            if (gameServer2) gameServer2.restartGame();
+        }, 100);
         return;
     }
 
@@ -407,10 +446,22 @@ var server = http.createServer(function(req, res) {
     });
 });
 
-// 2. Initialize Ogar GameServer attached to the SAME HTTP server
-var gameServer = new GameServer();
-gameServer.startWithHttpServer(server);
+// 2. Initialize GameServer 1 (Experimental / נסיוני אתגרי) on primary HTTP port (3000)
+var gameServer1 = new GameServer();
+gameServer1.config.serverGamemode = 2; // Experimental
+gameServer1.gameMode = gameServer1.pluginHandler.gamemodes.retrieveGamemode(2);
+gameServer1.startWithHttpServer(server);
+
+// 3. Initialize GameServer 2 (Classic FFA / קלאסי ראשי) on port 3001
+var CLASSIC_PORT = process.env.CLASSIC_PORT || 3001;
+var gameServer2 = new GameServer();
+gameServer2.config.serverPort = CLASSIC_PORT;
+gameServer2.config.serverGamemode = 0; // Classic FFA
+gameServer2.gameMode = gameServer2.pluginHandler.gamemodes.retrieveGamemode(0);
+gameServer2.start();
 
 server.listen(PORT, function() {
     console.log('[Unified Server] Agar.io game & website running on port ' + PORT);
+    console.log('[Unified Server] Server 1 (Experimental) on port ' + PORT);
+    console.log('[Unified Server] Server 2 (Classic FFA) on port ' + CLASSIC_PORT);
 });
