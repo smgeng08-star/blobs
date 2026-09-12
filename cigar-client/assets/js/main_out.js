@@ -45,37 +45,39 @@
             osc.start(now);
             osc.stop(now + 0.4);
         } else if (type === 'death') {
-            // Clean, punchy 0.35s defeat thud & bass drop (satisfying & non-intrusive)
+            // Authentic Agar/Blobz "Swallowed Pop" - Organic juicy pop & soft crunch
             var osc = ctx.createOscillator();
-            var oscSub = ctx.createOscillator();
+            var oscLow = ctx.createOscillator();
             var gain = ctx.createGain();
-            var gainSub = ctx.createGain();
+            var gainLow = ctx.createGain();
 
-            osc.type = 'triangle';
-            oscSub.type = 'sine';
+            osc.type = 'sine';
+            oscLow.type = 'sine';
 
-            osc.frequency.setValueAtTime(160, now);
-            osc.frequency.exponentialRampToValueAtTime(40, now + 0.32);
+            // High-to-mid liquid pop pitch contour
+            osc.frequency.setValueAtTime(320, now);
+            osc.frequency.exponentialRampToValueAtTime(80, now + 0.12);
 
-            oscSub.frequency.setValueAtTime(90, now);
-            oscSub.frequency.exponentialRampToValueAtTime(30, now + 0.35);
+            // Subtle sub resonance
+            oscLow.frequency.setValueAtTime(140, now);
+            oscLow.frequency.exponentialRampToValueAtTime(50, now + 0.18);
 
-            gain.gain.setValueAtTime(0.42, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+            gain.gain.setValueAtTime(0.38, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
 
-            gainSub.gain.setValueAtTime(0.35, now);
-            gainSub.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+            gainLow.gain.setValueAtTime(0.25, now);
+            gainLow.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
 
             osc.connect(gain);
             gain.connect(masterGain);
 
-            oscSub.connect(gainSub);
-            gainSub.connect(masterGain);
+            oscLow.connect(gainLow);
+            gainLow.connect(masterGain);
 
             osc.start(now);
-            oscSub.start(now);
-            osc.stop(now + 0.35);
-            oscSub.stop(now + 0.38);
+            oscLow.start(now);
+            osc.stop(now + 0.15);
+            oscLow.stop(now + 0.20);
         } else if (type === 'virus') {
             // Sharp shattering noise burst + pop
             var osc = ctx.createOscillator();
