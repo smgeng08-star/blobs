@@ -107,8 +107,8 @@ MotherCell.prototype.eat = function() {
     // When mass > baseMass (200), shoots out normal food pellets at a smooth, steady and balanced rate
     if (this.mass > baseMass) {
         var excess = this.mass - baseMass;
-        // Steady emission curve: 1 to 4 pellets per tick (subtle, beautiful and authentic flow)
-        var pelletsToEmit = Math.max(1, Math.min(Math.floor(excess * 0.008) + 1, 4));
+        // Balanced emission curve: 1 to 5 pellets per tick (exactly half the previous rate)
+        var pelletsToEmit = Math.max(1, Math.min(Math.floor(excess * 0.01) + 1, 5));
         pelletsToEmit = Math.min(pelletsToEmit, excess);
 
         for (var k = 0; k < pelletsToEmit; k++) {
