@@ -1075,7 +1075,7 @@
         ctx.scale(scaleFactor, scaleFactor);
         ctx.globalAlpha = .8;
         var len = chatBoard.length;
-        var from = len - 10; // Max amount of lines to display on a chat board
+        var from = len - 15; // Max amount of lines to display on a chat board (15 messages)
         if (from < 0) from = 0;
         var blobzChatColors = [
             '#00a8ff', // Bright Sky Blue
