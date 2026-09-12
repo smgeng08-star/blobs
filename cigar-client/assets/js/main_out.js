@@ -1100,8 +1100,8 @@
             var isUserAdmin = (item.name && item.name.trim().toLowerCase() === 'reigns') || (item.name && item.name.indexOf('[Admin]') !== -1);
             var cleanName = (item.name || '').replace('[Admin]', '').trim();
 
-            var currentX = 10;
-            var yPos = chatCanvas.height / scaleFactor - 22 * (len - i - from);
+            var currentX = 14;
+            var yPos = chatCanvas.height / scaleFactor - 23 * (len - i - from);
 
             ctx.save();
             ctx.font = 'bold 15px Arial, sans-serif';
@@ -1109,7 +1109,7 @@
             ctx.miterLimit = 2;
 
             if (isUserAdmin) {
-                // [Admin] tag in orange-red (#ff4500 / #ff5722)
+                // [Admin] tag in orange-red (#ff4500)
                 ctx.lineWidth = 3;
                 ctx.strokeStyle = '#000000';
                 ctx.strokeText('[Admin] ', currentX, yPos + 15);
@@ -1126,7 +1126,7 @@
                 ctx.fillText(fullAdminName, currentX, yPos + 15);
 
                 var nameWidth = ctx.measureText(fullAdminName).width;
-                currentX += nameWidth + 8;
+                currentX += nameWidth;
             } else {
                 // Regular player: shade of blue with bold black stroke
                 var nameColor = getBlobzChatNameColor(cleanName);
@@ -1139,16 +1139,17 @@
                 ctx.fillText(fullName, currentX, yPos + 15);
 
                 var nameWidth = ctx.measureText(fullName).width;
-                currentX += nameWidth + 8;
+                currentX += nameWidth;
             }
 
-            // Message text: pure white with bold black outline
+            // Message text column: shifted rightwards (at least 215px or currentX + 20) matching authentic Blobz screenshot
+            var msgX = Math.max(currentX + 20, 215);
             var msgText = item.message || '';
             ctx.lineWidth = 3;
             ctx.strokeStyle = '#000000';
-            ctx.strokeText(msgText, currentX, yPos + 15);
+            ctx.strokeText(msgText, msgX, yPos + 15);
             ctx.fillStyle = '#ffffff';
-            ctx.fillText(msgText, currentX, yPos + 15);
+            ctx.fillText(msgText, msgX, yPos + 15);
 
             ctx.restore();
         }
