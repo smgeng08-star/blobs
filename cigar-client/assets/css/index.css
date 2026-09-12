@@ -26,7 +26,7 @@ body {
     display: block;
     position: absolute;
     inset: 0;
-    background: #ffffff url('../img/blobs_wallpaper_raw.jpg') no-repeat center center;
+    background: #ffffff url('../img/blobs_wallpaper_clean_hd.jpg') no-repeat center center;
     background-size: cover;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: high-quality;
