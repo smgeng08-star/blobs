@@ -9,11 +9,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link href="assets/css/bootstrap.min.css?v=20260912_06" rel="stylesheet">
-    <link href="assets/css/index.css?v=20260912_06" rel="stylesheet">
+    <link href="assets/css/bootstrap.min.css?v=20260912_07" rel="stylesheet">
+    <link href="assets/css/index.css?v=20260912_07" rel="stylesheet">
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/vector.js?v=20260912_06"></script>
-    <script src="assets/js/main_out.js?v=20260912_06"></script>
+    <script src="assets/js/vector.js?v=20260912_07"></script>
+    <script src="assets/js/main_out.js?v=20260912_07"></script>
     <script>
         $(function() {
             $('#overlays').show();
@@ -379,20 +379,20 @@
     </div>
 
     <!-- Admin Control Panel Modal -->
-    <div id="admin-panel-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:460px; max-width:94vw; background:#0f172a; border:2px solid #ef4444; border-radius:16px; padding:18px; z-index:2000; box-shadow:0 20px 50px rgba(0,0,0,0.65), 0 0 30px rgba(239,68,68,0.2); color:#f8fafc; font-family:'Assistant', sans-serif; direction:rtl;">
+    <div id="admin-panel-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:520px; max-width:95vw; max-height:88vh; overflow-y:auto; background:#0f172a; border:2px solid #ef4444; border-radius:16px; padding:18px; z-index:2000; box-shadow:0 20px 50px rgba(0,0,0,0.75), 0 0 30px rgba(239,68,68,0.25); color:#f8fafc; font-family:'Assistant', sans-serif; direction:rtl;">
         
         <!-- Header -->
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:10px; margin-bottom:12px;">
             <div style="display:flex; align-items:center; gap:8px;">
                 <span style="background:#ef4444; color:#fff; font-size:11px; font-weight:900; padding:2px 6px; border-radius:4px;">ADMIN</span>
-                <span style="font-size:16px; font-weight:900; color:#ffffff;">תפריט ניהול שרת | Reigns</span>
+                <span style="font-size:17px; font-weight:900; color:#ffffff;">תפריט ניהול שרת | Reigns</span>
             </div>
             <button type="button" onclick="toggleAdminPanel()" style="background:transparent; border:none; color:#94a3b8; font-size:20px; font-weight:bold; cursor:pointer; padding:0 4px;">✕</button>
         </div>
 
         <!-- Section 1: שליטה במסה (Mass Tools) -->
         <div style="margin-bottom:14px;">
-            <div style="font-size:13px; font-weight:800; color:#38bdf8; margin-bottom:6px;">⚡ שליטה במסה (Mass)</div>
+            <div style="font-size:13px; font-weight:800; color:#38bdf8; margin-bottom:6px;">⚡ שליטה במסה שלך (Mass)</div>
             <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:6px;">
                 <button type="button" onclick="adminSetMass(1000)" style="background:#1e293b; border:1px solid #475569; color:#f8fafc; border-radius:6px; padding:6px; font-size:12px; font-weight:700; cursor:pointer;">1,000</button>
                 <button type="button" onclick="adminSetMass(5000)" style="background:#1e293b; border:1px solid #475569; color:#f8fafc; border-radius:6px; padding:6px; font-size:12px; font-weight:700; cursor:pointer;">5,000</button>
@@ -405,7 +405,36 @@
             </div>
         </div>
 
-        <!-- Section 2: יכולות מיוחדות (Cheats & Godmode) -->
+        <!-- Section 2: בוטים אישיים ללא הגבלה (Unlimited Personal Minions) -->
+        <div style="margin-bottom:14px; background:#131d2e; border:1px solid #1e3a5f; border-radius:10px; padding:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div style="font-size:13px; font-weight:800; color:#38bdf8;">🤖 הוספת בוטים אישיים (ללא הגבלה!)</div>
+            </div>
+            <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:6px; margin-bottom:6px;">
+                <button type="button" onclick="adminSpawnPersonalMinions(10)" style="background:#1e293b; border:1px solid #0284c7; color:#38bdf8; border-radius:6px; padding:6px; font-size:12px; font-weight:800; cursor:pointer;">+10 בוטים</button>
+                <button type="button" onclick="adminSpawnPersonalMinions(25)" style="background:#1e293b; border:1px solid #0284c7; color:#38bdf8; border-radius:6px; padding:6px; font-size:12px; font-weight:800; cursor:pointer;">+25 בוטים</button>
+                <button type="button" onclick="adminSpawnPersonalMinions(50)" style="background:#1e293b; border:1px solid #0284c7; color:#38bdf8; border-radius:6px; padding:6px; font-size:12px; font-weight:800; cursor:pointer;">+50 בוטים</button>
+                <button type="button" onclick="adminSpawnPersonalMinions(100)" style="background:linear-gradient(135deg, #0284c7, #0369a1); border:1px solid #38bdf8; color:#ffffff; border-radius:6px; padding:6px; font-size:12px; font-weight:800; cursor:pointer;">+100 בוטים</button>
+            </div>
+            <div style="display:flex; gap:6px;">
+                <input type="number" id="custom-minions-input" placeholder="הזן כמות בוטים חופשית (למשל 75)..." style="flex:1; background:#1e293b; border:1px solid #475569; border-radius:6px; padding:6px 10px; color:#ffffff; font-size:12px; font-weight:700; outline:none;" />
+                <button type="button" onclick="adminSpawnPersonalMinions(parseInt($('#custom-minions-input').val()))" style="background:#0284c7; border:none; color:#fff; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:800; cursor:pointer;">שגר בוטים</button>
+                <button type="button" onclick="if(typeof removeBots === 'function') removeBots();" style="background:#451a1a; border:1px solid #ef4444; color:#fca5a5; border-radius:6px; padding:6px 10px; font-size:12px; font-weight:800; cursor:pointer;">הסר הכל</button>
+            </div>
+        </div>
+
+        <!-- Section 3: שחקנים מחוברים והענקת מסה (Give Mass to Players) -->
+        <div style="margin-bottom:14px; background:#131d2e; border:1px solid #1e3a5f; border-radius:10px; padding:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div style="font-size:13px; font-weight:800; color:#38bdf8;">👥 שחקנים פעילים בשרת (הענקת מסה)</div>
+                <button type="button" onclick="refreshAdminPlayersList()" style="background:#1e293b; border:1px solid #475569; color:#94a3b8; border-radius:4px; padding:2px 8px; font-size:11px; cursor:pointer;">רענן שחקנים</button>
+            </div>
+            <div id="admin-players-list" style="max-height:130px; overflow-y:auto; display:flex; flex-direction:column; gap:5px; padding-left:4px;">
+                <div style="text-align:center; font-size:11.5px; color:#94a3b8; padding:6px;">טוען רשימת שחקנים...</div>
+            </div>
+        </div>
+
+        <!-- Section 4: יכולות מיוחדות (Cheats & Godmode) -->
         <div style="margin-bottom:14px;">
             <div style="font-size:13px; font-weight:800; color:#38bdf8; margin-bottom:6px;">🛡️ יכולות מיוחדות (Cheats)</div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
@@ -424,10 +453,10 @@
             </div>
         </div>
 
-        <!-- Section 3: שיגור ישויות ובוטים (Entities & Bots) -->
+        <!-- Section 5: שיגור ישויות ואיפוס שרת -->
         <div style="margin-bottom:12px;">
-            <div style="font-size:13px; font-weight:800; color:#38bdf8; margin-bottom:6px;">👾 שיגור וירוסים ובוטים</div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+            <div style="font-size:13px; font-weight:800; color:#38bdf8; margin-bottom:6px;">👾 שיגור ישויות ואיפוס שרת</div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:8px;">
                 <button type="button" onclick="adminSpawnVirus()" style="background:#1e293b; border:1px solid #475569; color:#22c55e; border-radius:6px; padding:7px; font-size:12px; font-weight:800; cursor:pointer;">
                     🟢 שגר וירוס ירוק
                 </button>
@@ -435,15 +464,20 @@
                     🔴 שגר וירוס אדום (Mother)
                 </button>
                 <button type="button" onclick="adminSpawnBots(10)" style="background:#1e293b; border:1px solid #475569; color:#f8fafc; border-radius:6px; padding:7px; font-size:12px; font-weight:800; cursor:pointer;">
-                    🤖 הוסף 10 בוטים
+                    🤖 הוסף 10 בוטים עולם
                 </button>
                 <button type="button" onclick="adminKillAllBots()" style="background:#1e293b; border:1px solid #ef4444; color:#fca5a5; border-radius:6px; padding:7px; font-size:12px; font-weight:800; cursor:pointer;">
                     ❌ מחיקת כל הבוטים
                 </button>
             </div>
+            
+            <!-- Restart Button -->
+            <button type="button" onclick="adminRestartServer()" style="width:100%; background:linear-gradient(135deg, #b91c1c, #991b1b); border:1.5px solid #ef4444; color:#ffffff; border-radius:8px; padding:9px; font-size:13px; font-weight:900; cursor:pointer; box-shadow:0 4px 15px rgba(239,68,68,0.3); transition:all 0.15s ease;">
+                🔄 איפוס ואתחול מלא של שרת המשחק (Restart Game)
+            </button>
         </div>
 
-        <!-- Section 4: מקשי קיצור מהירים -->
+        <!-- Section 6: מקשי קיצור מהירים -->
         <div style="background:#090d16; border:1px solid #1e293b; border-radius:8px; padding:8px 10px; font-size:11.5px; color:#94a3b8; text-align:center;">
             <span>💡 <b>מקשי קיצור בצ'אט:</b> </span>
             <span style="color:#e2e8f0;">/mass 5000 | /god | /merge | /freeze | /virus | /killbots</span>
@@ -457,6 +491,7 @@
                 panel.fadeOut(150);
             } else {
                 panel.fadeIn(150);
+                refreshAdminPlayersList();
             }
         }
 
@@ -464,6 +499,75 @@
             if (!amount || amount <= 0) return;
             if (typeof window.sendAdminAction === 'function') {
                 window.sendAdminAction(1, amount);
+            }
+        }
+
+        function adminSpawnPersonalMinions(count) {
+            count = parseInt(count) || 25;
+            if (count <= 0) return;
+            if (typeof window.sendAdminAction === 'function') {
+                window.sendAdminAction(11, count);
+            }
+        }
+
+        function refreshAdminPlayersList() {
+            $.ajax({
+                url: '/api/admin/players',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    var container = $('#admin-players-list');
+                    container.empty();
+                    if (!data || !data.players || data.players.length === 0) {
+                        container.html('<div style="text-align:center; font-size:11.5px; color:#94a3b8; padding:6px;">אין שחקנים פעילים כרגע</div>');
+                        return;
+                    }
+                    data.players.forEach(function(p) {
+                        var isMe = p.name && p.name.trim().toLowerCase() === 'reigns';
+                        var row = $('<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; border:1px solid #334155; border-radius:6px; padding:6px 10px; font-size:12px;"></div>');
+                        var info = $('<div><b>' + (p.name || 'שחקן') + '</b> ' + (isMe ? '<span style="color:#ef4444; font-size:10px;">(אתה)</span>' : '') + ' <span style="color:#94a3b8; font-size:11px;">[מסה: ' + p.mass + ']</span></div>');
+                        var btns = $('<div style="display:flex; gap:4px;"></div>');
+                        
+                        var b1000 = $('<button type="button" style="background:#0284c7; border:none; color:#fff; border-radius:4px; padding:3px 6px; font-size:11px; font-weight:800; cursor:pointer;">+1,000</button>');
+                        b1000.on('click', function() { adminGiveMassToPlayer(p.pID, p.name, 1000); });
+                        
+                        var b5000 = $('<button type="button" style="background:#0369a1; border:none; color:#fff; border-radius:4px; padding:3px 6px; font-size:11px; font-weight:800; cursor:pointer;">+5,000</button>');
+                        b5000.on('click', function() { adminGiveMassToPlayer(p.pID, p.name, 5000); });
+
+                        btns.append(b1000).append(b5000);
+                        row.append(info).append(btns);
+                        container.append(row);
+                    });
+                }
+            });
+        }
+
+        function adminGiveMassToPlayer(pID, name, mass) {
+            $.ajax({
+                url: '/api/admin/givemass',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ pID: pID, name: name, mass: mass }),
+                success: function(res) {
+                    refreshAdminPlayersList();
+                }
+            });
+        }
+
+        function adminRestartServer() {
+            if (confirm('האם אתה בטוח שברצונך לאתחל את שרת המשחק מחדש? כל המפה והמצב יאופסו.')) {
+                if (typeof window.sendAdminAction === 'function') {
+                    window.sendAdminAction(12);
+                }
+                $.ajax({
+                    url: '/api/admin/restart',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({}),
+                    success: function() {
+                        toggleAdminPanel();
+                    }
+                });
             }
         }
 
