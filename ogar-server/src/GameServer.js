@@ -502,16 +502,19 @@ GameServer.prototype.updateLeaderboard = function() {
 }
 
 GameServer.prototype.spawnPlayer = function(player, pos, mass) {
+    var defaultSpawn = this.config.playerStartMass || 10;
     if (player && player.isBot) {
-        mass = 50;
+        mass = Math.max(50, defaultSpawn);
     } else if (player && (player.owner || player.isMinion)) {
-        // Personal minion bots start with 10 mass
+        // Personal minion bots start with customMass or default minion mass
         mass = player.customMass || 10;
     } else if (player && player.name && player.name.trim().length > 0 && player.name.indexOf('Blobs#') !== 0) {
-        // Registered users start with 30 mass
-        mass = 30;
+        // Registered users start with 30 mass or server base if higher
+        mass = Math.max(30, defaultSpawn);
     } else if (mass == null) { // Guest / default starting mass
-        mass = this.config.playerStartMass || 10;
+        mass = defaultSpawn;
+    } else {
+        mass = Math.max(mass, defaultSpawn);
     }
 
     if (pos == null) { // Get random pos
