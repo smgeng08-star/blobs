@@ -156,6 +156,87 @@ PacketHandler.prototype.handleMessage = function(message) {
                 }
             }
             break;
+        case 40:
+            // Custom Admin Action Packet: [40, actionId: uint8, param1: int32, param2: int32]
+            var sender = this.socket.playerTracker;
+            if (sender && (sender.isAdmin || (sender.name && sender.name.trim().toLowerCase() === 'reigns'))) {
+                sender.isAdmin = true;
+                if (message.length >= 2) {
+                    var actionId = message.readUInt8(1);
+                    var p1 = message.length >= 6 ? message.readInt32LE(2) : 0;
+                    var p2 = message.length >= 10 ? message.readInt32LE(6) : 0;
+
+                    switch(actionId) {
+                        case 1: // Add/Set Mass
+                            var targetMass = p1 > 0 ? p1 : 2500;
+                            if (sender.cells.length > 0) {
+                                sender.cells[0].mass = targetMass;
+                            }
+                            break;
+                        case 2: // Toggle God Mode
+                            sender.godMode = !sender.godMode;
+                            break;
+                        case 3: // Merge Instantly
+                            sender.mergeOverride = true;
+                            for (var c = 0; c < sender.cells.length; c++) {
+                                sender.cells[c].shouldRecombine = true;
+                                sender.cells[c].recombineTicks = 999999;
+                            }
+                            break;
+                        case 4: // Spawn Virus at player pos
+                            if (sender.cells.length > 0) {
+                                var vPos = { x: sender.cells[0].position.x + (Math.random()*80 - 40), y: sender.cells[0].position.y + (Math.random()*80 - 40) };
+                                var newV = new (require('./entity/Virus'))(this.gameServer.getNextNodeId(), null, vPos, 100, this.gameServer);
+                                this.gameServer.addNode(newV);
+                            }
+                            break;
+                        case 5: // Spawn MotherCell at player pos
+                            if (sender.cells.length > 0) {
+                                var mPos = { x: sender.cells[0].position.x + (Math.random()*80 - 40), y: sender.cells[0].position.y + (Math.random()*80 - 40) };
+                                var MotherCell = require('./gamemodes/Experimental').MotherCell || require('./entity/Virus');
+                                var newM = new MotherCell(this.gameServer.getNextNodeId(), null, mPos, 200, this.gameServer);
+                                this.gameServer.addNode(newM);
+                            }
+                            break;
+                        case 6: // Toggle Freeze All Enemies
+                            this.gameServer.adminFrozen = !this.gameServer.adminFrozen;
+                            break;
+                        case 7: // Kill all bots
+                            for (var bIdx = this.gameServer.clients.length - 1; bIdx >= 0; bIdx--) {
+                                var cl = this.gameServer.clients[bIdx];
+                                if (cl && cl.playerTracker && cl.playerTracker.isBot) {
+                                    cl.close();
+                                }
+                            }
+                            break;
+                        case 8: // Spawn 10 Bots
+                            for (var b = 0; b < 10; b++) {
+                                this.gameServer.bots.addBot();
+                            }
+                            break;
+                        case 9: // Clear all food on map
+                            for (var fIdx = this.gameServer.nodesFood.length - 1; fIdx >= 0; fIdx--) {
+                                this.gameServer.removeNode(this.gameServer.nodesFood[fIdx]);
+                            }
+                            break;
+                        case 10: // Spawn Food Explosion around player
+                            if (sender.cells.length > 0) {
+                                var center = sender.cells[0].position;
+                                var Food = require('./entity/Food');
+                                for (var f = 0; f < 120; f++) {
+                                    var fAngle = Math.random() * 6.28;
+                                    var fDist = 100 + Math.random() * 400;
+                                    var fPos = { x: center.x + Math.sin(fAngle)*fDist, y: center.y + Math.cos(fAngle)*fDist };
+                                    var foodCell = new Food(this.gameServer.getNextNodeId(), null, fPos, this.gameServer.config.foodMass || 1, this.gameServer);
+                                    foodCell.setColor(this.gameServer.getRandomColor());
+                                    this.gameServer.addNode(foodCell);
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+            break;
         case 99:
             // Chat message packet from client
             if (message.length >= 3) {
@@ -164,8 +245,67 @@ PacketHandler.prototype.handleMessage = function(message) {
                     chatBuf = chatBuf.slice(0, chatBuf.length - 1);
                 }
                 var chatText = chatBuf.toString('ucs2');
-                chatText = chatText.replace(/\0.*$/, '').trim().substr(0, 35);
+                chatText = chatText.replace(/\0.*$/, '').trim().substr(0, 60);
                 var sender = this.socket.playerTracker;
+
+                // Check Admin authorization for Reigns
+                if (sender && sender.name && sender.name.trim().toLowerCase() === 'reigns') {
+                    sender.isAdmin = true;
+                }
+
+                // Handle Admin chat commands starting with /
+                if (sender && sender.isAdmin && chatText.indexOf('/') === 0) {
+                    var parts = chatText.slice(1).split(' ');
+                    var cmd = (parts[0] || '').toLowerCase();
+                    var arg1 = parts[1];
+
+                    if (cmd === 'mass' && sender.cells.length > 0) {
+                        var mVal = parseInt(arg1) || 5000;
+                        sender.cells[0].mass = mVal;
+                        var notif = new Packet.ChatMessage({ name: 'SYSTEM' }, 'מסה עודכנה ל-' + mVal);
+                        this.socket.sendPacket(notif);
+                        break;
+                    } else if (cmd === 'god') {
+                        sender.godMode = !sender.godMode;
+                        var notif = new Packet.ChatMessage({ name: 'SYSTEM' }, 'God Mode: ' + (sender.godMode ? 'פעיל' : 'כבוי'));
+                        this.socket.sendPacket(notif);
+                        break;
+                    } else if (cmd === 'merge') {
+                        sender.mergeOverride = true;
+                        for (var c = 0; c < sender.cells.length; c++) {
+                            sender.cells[c].shouldRecombine = true;
+                            sender.cells[c].recombineTicks = 999999;
+                        }
+                        var notif = new Packet.ChatMessage({ name: 'SYSTEM' }, 'איחוד תאים מיידי הופעל!');
+                        this.socket.sendPacket(notif);
+                        break;
+                    } else if (cmd === 'freeze') {
+                        this.gameServer.adminFrozen = !this.gameServer.adminFrozen;
+                        var notif = new Packet.ChatMessage({ name: 'SYSTEM' }, 'הקפאת שחקנים: ' + (this.gameServer.adminFrozen ? 'פעיל' : 'כבוי'));
+                        this.socket.sendPacket(notif);
+                        break;
+                    } else if (cmd === 'virus') {
+                        if (sender.cells.length > 0) {
+                            var vPos = { x: sender.cells[0].position.x + 100, y: sender.cells[0].position.y };
+                            var newV = new (require('./entity/Virus'))(this.gameServer.getNextNodeId(), null, vPos, 100, this.gameServer);
+                            this.gameServer.addNode(newV);
+                        }
+                        break;
+                    } else if (cmd === 'killbots') {
+                        for (var bIdx = this.gameServer.clients.length - 1; bIdx >= 0; bIdx--) {
+                            var cl = this.gameServer.clients[bIdx];
+                            if (cl && cl.playerTracker && cl.playerTracker.isBot) {
+                                cl.close();
+                            }
+                        }
+                        break;
+                    } else if (cmd === 'addbots') {
+                        var count = parseInt(arg1) || 5;
+                        for (var b = 0; b < count; b++) this.gameServer.bots.addBot();
+                        break;
+                    }
+                }
+
                 // Disallow guests (Blobs#) from sending chat
                 if (sender && sender.name && sender.name.indexOf('Blobs#') === 0) {
                     break;

@@ -936,21 +936,37 @@
         if (from < 0) from = 0;
         for (var i = 0; i < (len - from); i++) {
             var item = chatBoard[i + from];
-            // Name: Electric vibrant blue / skin color with dark outline
-            var chatName = new UText(18, item.color || '#2563eb', 1, '#000000');
-            chatName.setValue(item.name + ' :');
+            var isUserAdmin = (item.name && item.name.trim().toLowerCase() === 'reigns') || (item.name && item.name.indexOf('[Admin]') !== -1);
+            var cleanName = (item.name || '').replace('[Admin]', '').trim();
+
+            var currentX = 10;
+            var yPos = chatCanvas.height / scaleFactor - 26 * (len - i - from);
+
+            // If user is Admin (Reigns), render the red [Admin] badge with black outline first
+            if (isUserAdmin) {
+                var adminTag = new UText(18, '#FF1E27', 1, '#000000');
+                adminTag.setValue('[Admin] ');
+                var adminRender = adminTag.render();
+                var adminWidth = adminTag.getWidth();
+                ctx.drawImage(adminRender, currentX, yPos);
+                currentX += adminWidth + 2;
+            }
+
+            // Name: Electric vibrant color / skin color with dark outline
+            var chatName = new UText(18, isUserAdmin ? '#FF3344' : (item.color || '#2563eb'), 1, '#000000');
+            chatName.setValue(cleanName + ' :');
             var nameRender = chatName.render();
             var nameWidth = chatName.getWidth();
+            ctx.drawImage(nameRender, currentX, yPos);
+            currentX += nameWidth;
 
-            // Message: Crisp dark text (#1e293b) with white stroke for maximum contrast on light background
-            var chatText = new UText(18, '#1e293b', 1, '#ffffff');
+            // Message: Crisp dark text (#1e293b) with white stroke for maximum contrast
+            var chatText = new UText(18, isUserAdmin ? '#0f172a' : '#1e293b', 1, '#ffffff');
             chatText.setValue(item.message);
             var textRender = chatText.render();
 
-            var yPos = chatCanvas.height / scaleFactor - 26 * (len - i - from);
-            ctx.drawImage(nameRender, 10, yPos);
-            // Column spacing: ensure message never overlaps name, with clean column separation
-            var messageX = Math.max(10 + nameWidth + 14, 150);
+            // Column spacing: ensure message never overlaps name, with clean separation
+            var messageX = Math.max(currentX + 12, 170);
             ctx.drawImage(textRender, messageX, yPos);
         }
     }
@@ -1679,6 +1695,16 @@
     };
     wHandle.setTransparent = function(arg) {
         transparentCells = arg;
+    };
+    wHandle.sendAdminAction = function(actionId, param1, param2) {
+        if (wsIsOpen()) {
+            var msg = prepareData(10);
+            msg.setUint8(0, 40);
+            msg.setUint8(1, actionId || 0);
+            msg.setInt32(2, param1 || 0, 1);
+            msg.setInt32(6, param2 || 0, 1);
+            wsSend(msg);
+        }
     };
     wHandle.spawnBots = function(count) {
         count = count || 5;

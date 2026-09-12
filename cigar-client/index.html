@@ -9,11 +9,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link href="assets/css/bootstrap.min.css?v=20260912_05" rel="stylesheet">
-    <link href="assets/css/index.css?v=20260912_05" rel="stylesheet">
+    <link href="assets/css/bootstrap.min.css?v=20260912_06" rel="stylesheet">
+    <link href="assets/css/index.css?v=20260912_06" rel="stylesheet">
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/vector.js?v=20260912_05"></script>
-    <script src="assets/js/main_out.js?v=20260912_05"></script>
+    <script src="assets/js/vector.js?v=20260912_06"></script>
+    <script src="assets/js/main_out.js?v=20260912_06"></script>
     <script>
         $(function() {
             $('#overlays').show();
@@ -362,7 +362,7 @@
                     <line x1="2" y1="2" x2="22" y2="22" stroke="#ef4444" stroke-width="2.5"></line>
                 </svg>
             </button>
-            <input type="text" id="chat_textbox" placeholder="לחץ אנטר - למשתמשים רשומים בלבד" maxlength="35" style="flex:1; height:100%; background:rgba(180, 195, 210, 0.45); border:none; border-left:1px solid rgba(255,255,255,0.25); border-radius:0 4px 4px 0; padding:0 12px; font-family:'Rubik','Assistant',sans-serif; font-size:13px; font-weight:700; color:#ffffff; direction:rtl; outline:none; transition:background 0.2s;" />
+            <input type="text" id="chat_textbox" placeholder="לחץ אנטר - למשתמשים רשומים בלבד" maxlength="60" style="flex:1; height:100%; background:rgba(180, 195, 210, 0.45); border:none; border-left:1px solid rgba(255,255,255,0.25); border-radius:0 4px 4px 0; padding:0 12px; font-family:'Rubik','Assistant',sans-serif; font-size:13px; font-weight:700; color:#ffffff; direction:rtl; outline:none; transition:background 0.2s;" />
         </div>
         <!-- Score Bar (Identical full width) -->
         <div id="blobz-score-bar" style="width:100%; height:35px; background:rgba(92, 118, 142, 0.75); border:1px solid rgba(255,255,255,0.25); border-radius:4px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.2); box-sizing:border-box;">
@@ -372,7 +372,163 @@
         </div>
     </div>
 
+    <!-- Admin Panel Floating Toggle Button (Visible for Reigns or via Key `~` or F2) -->
+    <div id="admin-floating-btn" onclick="toggleAdminPanel()" style="position:fixed; top:12px; right:12px; z-index:1000; background:linear-gradient(135deg, #dc2626, #991b1b); color:#ffffff; border:1.5px solid #ef4444; border-radius:8px; padding:6px 14px; font-family:'Rubik', sans-serif; font-size:13px; font-weight:900; cursor:pointer; box-shadow:0 4px 15px rgba(220,38,38,0.4); display:flex; align-items:center; gap:6px; transition:transform 0.15s ease;">
+        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#4ade80; box-shadow:0 0 8px #4ade80;"></span>
+        <span>פאנל ניהול [Admin]</span>
+    </div>
+
+    <!-- Admin Control Panel Modal -->
+    <div id="admin-panel-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:460px; max-width:94vw; background:#0f172a; border:2px solid #ef4444; border-radius:16px; padding:18px; z-index:2000; box-shadow:0 20px 50px rgba(0,0,0,0.65), 0 0 30px rgba(239,68,68,0.2); color:#f8fafc; font-family:'Assistant', sans-serif; direction:rtl;">
+        
+        <!-- Header -->
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:10px; margin-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="background:#ef4444; color:#fff; font-size:11px; font-weight:900; padding:2px 6px; border-radius:4px;">ADMIN</span>
+                <span style="font-size:16px; font-weight:900; color:#ffffff;">תפריט ניהול שרת | Reigns</span>
+            </div>
+            <button type="button" onclick="toggleAdminPanel()" style="background:transparent; border:none; color:#94a3b8; font-size:20px; font-weight:bold; cursor:pointer; padding:0 4px;">✕</button>
+        </div>
+
+        <!-- Section 1: שליטה במסה (Mass Tools) -->
+        <div style="margin-bottom:14px;">
+            <div style="font-size:13px; font-weight:800; color:#38bdf8; margin-bottom:6px;">⚡ שליטה במסה (Mass)</div>
+            <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:6px;">
+                <button type="button" onclick="adminSetMass(1000)" style="background:#1e293b; border:1px solid #475569; color:#f8fafc; border-radius:6px; padding:6px; font-size:12px; font-weight:700; cursor:pointer;">1,000</button>
+                <button type="button" onclick="adminSetMass(5000)" style="background:#1e293b; border:1px solid #475569; color:#f8fafc; border-radius:6px; padding:6px; font-size:12px; font-weight:700; cursor:pointer;">5,000</button>
+                <button type="button" onclick="adminSetMass(15000)" style="background:#1e293b; border:1px solid #475569; color:#f8fafc; border-radius:6px; padding:6px; font-size:12px; font-weight:700; cursor:pointer;">15,000</button>
+                <button type="button" onclick="adminSetMass(22500)" style="background:linear-gradient(135deg, #e11d48, #be123c); border:1px solid #f43f5e; color:#ffffff; border-radius:6px; padding:6px; font-size:12px; font-weight:800; cursor:pointer;">MAX (22.5k)</button>
+            </div>
+            <div style="display:flex; gap:6px; margin-top:6px;">
+                <input type="number" id="custom-mass-input" placeholder="הזן כמות מסה ידנית..." style="flex:1; background:#1e293b; border:1px solid #475569; border-radius:6px; padding:6px 10px; color:#ffffff; font-size:12px; font-weight:700; outline:none;" />
+                <button type="button" onclick="adminSetMass(parseInt($('#custom-mass-input').val()))" style="background:#0284c7; border:none; color:#fff; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:800; cursor:pointer;">קבע מסה</button>
+            </div>
+        </div>
+
+        <!-- Section 2: יכולות מיוחדות (Cheats & Godmode) -->
+        <div style="margin-bottom:14px;">
+            <div style="font-size:13px; font-weight:800; color:#38bdf8; margin-bottom:6px;">🛡️ יכולות מיוחדות (Cheats)</div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                <button type="button" id="btn-admin-god" onclick="adminToggleGod()" style="background:#1e293b; border:1px solid #475569; color:#f8fafc; border-radius:6px; padding:7px; font-size:12px; font-weight:800; cursor:pointer;">
+                    🛡️ מצב בלתי מנוצח (God)
+                </button>
+                <button type="button" onclick="adminInstantMerge()" style="background:#1e293b; border:1px solid #475569; color:#f8fafc; border-radius:6px; padding:7px; font-size:12px; font-weight:800; cursor:pointer;">
+                    ⚡ איחוד תאים מיידי (Merge)
+                </button>
+                <button type="button" id="btn-admin-freeze" onclick="adminToggleFreeze()" style="background:#1e293b; border:1px solid #475569; color:#f8fafc; border-radius:6px; padding:7px; font-size:12px; font-weight:800; cursor:pointer;">
+                    ❄️ הקפאת שחקנים/אויבים
+                </button>
+                <button type="button" onclick="adminFoodExplosion()" style="background:#1e293b; border:1px solid #475569; color:#f8fafc; border-radius:6px; padding:7px; font-size:12px; font-weight:800; cursor:pointer;">
+                    💥 פצצת אוכל סביבך
+                </button>
+            </div>
+        </div>
+
+        <!-- Section 3: שיגור ישויות ובוטים (Entities & Bots) -->
+        <div style="margin-bottom:12px;">
+            <div style="font-size:13px; font-weight:800; color:#38bdf8; margin-bottom:6px;">👾 שיגור וירוסים ובוטים</div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                <button type="button" onclick="adminSpawnVirus()" style="background:#1e293b; border:1px solid #475569; color:#22c55e; border-radius:6px; padding:7px; font-size:12px; font-weight:800; cursor:pointer;">
+                    🟢 שגר וירוס ירוק
+                </button>
+                <button type="button" onclick="adminSpawnMother()" style="background:#1e293b; border:1px solid #475569; color:#ef4444; border-radius:6px; padding:7px; font-size:12px; font-weight:800; cursor:pointer;">
+                    🔴 שגר וירוס אדום (Mother)
+                </button>
+                <button type="button" onclick="adminSpawnBots(10)" style="background:#1e293b; border:1px solid #475569; color:#f8fafc; border-radius:6px; padding:7px; font-size:12px; font-weight:800; cursor:pointer;">
+                    🤖 הוסף 10 בוטים
+                </button>
+                <button type="button" onclick="adminKillAllBots()" style="background:#1e293b; border:1px solid #ef4444; color:#fca5a5; border-radius:6px; padding:7px; font-size:12px; font-weight:800; cursor:pointer;">
+                    ❌ מחיקת כל הבוטים
+                </button>
+            </div>
+        </div>
+
+        <!-- Section 4: מקשי קיצור מהירים -->
+        <div style="background:#090d16; border:1px solid #1e293b; border-radius:8px; padding:8px 10px; font-size:11.5px; color:#94a3b8; text-align:center;">
+            <span>💡 <b>מקשי קיצור בצ'אט:</b> </span>
+            <span style="color:#e2e8f0;">/mass 5000 | /god | /merge | /freeze | /virus | /killbots</span>
+        </div>
+    </div>
+
     <script>
+        function toggleAdminPanel() {
+            var panel = $('#admin-panel-modal');
+            if (panel.is(':visible')) {
+                panel.fadeOut(150);
+            } else {
+                panel.fadeIn(150);
+            }
+        }
+
+        function adminSetMass(amount) {
+            if (!amount || amount <= 0) return;
+            if (typeof window.sendAdminAction === 'function') {
+                window.sendAdminAction(1, amount);
+            }
+        }
+
+        var isGodActive = false;
+        function adminToggleGod() {
+            isGodActive = !isGodActive;
+            $('#btn-admin-god').css('background', isGodActive ? '#15803d' : '#1e293b');
+            if (typeof window.sendAdminAction === 'function') {
+                window.sendAdminAction(2);
+            }
+        }
+
+        function adminInstantMerge() {
+            if (typeof window.sendAdminAction === 'function') {
+                window.sendAdminAction(3);
+            }
+        }
+
+        function adminSpawnVirus() {
+            if (typeof window.sendAdminAction === 'function') {
+                window.sendAdminAction(4);
+            }
+        }
+
+        function adminSpawnMother() {
+            if (typeof window.sendAdminAction === 'function') {
+                window.sendAdminAction(5);
+            }
+        }
+
+        var isFrozenActive = false;
+        function adminToggleFreeze() {
+            isFrozenActive = !isFrozenActive;
+            $('#btn-admin-freeze').css('background', isFrozenActive ? '#0369a1' : '#1e293b');
+            if (typeof window.sendAdminAction === 'function') {
+                window.sendAdminAction(6);
+            }
+        }
+
+        function adminKillAllBots() {
+            if (typeof window.sendAdminAction === 'function') {
+                window.sendAdminAction(7);
+            }
+        }
+
+        function adminSpawnBots(count) {
+            if (typeof window.sendAdminAction === 'function') {
+                window.sendAdminAction(8, count || 10);
+            }
+        }
+
+        function adminFoodExplosion() {
+            if (typeof window.sendAdminAction === 'function') {
+                window.sendAdminAction(10);
+            }
+        }
+
+        // Global Key handler for Admin Panel Toggle (~ or F2)
+        $(document).on('keydown', function(e) {
+            if (e.key === '`' || e.key === '~' || e.key === 'F2') {
+                if ($('#chat_textbox').is(':focus')) return;
+                e.preventDefault();
+                toggleAdminPanel();
+            }
+        });
         // Tab switching for Blobs Authentic Modal
         function switchBTab(tabKey) {
             $('.b-tab').removeClass('active');

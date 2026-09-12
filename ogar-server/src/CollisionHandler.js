@@ -100,6 +100,8 @@ CollisionHandler.prototype.canEat = function(cell, check) {
 
     // Virus / MotherCell (cellType 2) collision with player (cellType 0)
     if (check.cellType == 2) {
+        if (cell.owner && cell.owner.godMode) return false; // God mode immune to virus pop
+
         // Handle Red MotherCell in Experimental gamemode
         if (check.isMotherCell) {
             if (cell.mass > check.mass * 1.15) {
@@ -147,6 +149,10 @@ CollisionHandler.prototype.canEat = function(cell, check) {
         var maxEatDist = r1 - (r2 * 0.35);
         if (maxEatDist <= 0) maxEatDist = r1;
         return dist <= maxEatDist * maxEatDist;
+    }
+
+    if (check.owner && check.owner.godMode) {
+        return false; // Cannot eat player with godMode active
     }
 
     if (this.gameServer.gameMode.haveTeams &&

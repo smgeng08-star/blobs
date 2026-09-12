@@ -42,6 +42,11 @@ PlayerCell.prototype.getSplittingSpeed = function() {
 };
 
 PlayerCell.prototype.move = function() {
+    // If admin froze enemies, non-admins cannot move
+    if (this.gameServer && this.gameServer.adminFrozen && this.owner && !this.owner.isAdmin) {
+        return;
+    }
+
     // Get angle to mouse
     var cartesian = this.position.clone().sub(this.owner.mouse);
     var distance = cartesian.distance(),
