@@ -4,5 +4,23 @@
     "password": "68870922",
     "skin": "/skins/users/reigns.png",
     "createdAt": 1789156140000
+  },
+  "בלובס": {
+    "username": "בלובס",
+    "password": "12345678",
+    "skin": null,
+    "createdAt": 1789235374633
+  },
+  "בלובס1": {
+    "username": "בלובס1",
+    "password": "1234",
+    "skin": null,
+    "createdAt": 1789235430782
+  },
+  "בלובס12": {
+    "username": "בלובס12",
+    "password": "1234",
+    "skin": null,
+    "createdAt": 1789235459052
   }
 }

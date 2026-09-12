@@ -1078,19 +1078,16 @@
         var from = len - 10; // Max amount of lines to display on a chat board
         if (from < 0) from = 0;
         var blobzChatColors = [
-            '#0284c7', // Sky Blue
-            '#0ea5e9', // Vivid Blue
-            '#06b6d4', // Cyan
-            '#0891b2', // Deep Cyan
-            '#14b8a6', // Teal / Turquoise
-            '#0d9488', // Dark Teal
-            '#38bdf8', // Light Azure
-            '#2563eb', // Royal Blue
-            '#0096e6'  // Original Blobs Blue
+            '#00a8ff', // Bright Sky Blue
+            '#0097e6', // Rich Cyan Blue
+            '#00d2d3', // Turquoise Teal
+            '#48dbfb', // Vibrant Light Blue
+            '#2e86de', // Steel Blue
+            '#54a0ff'  // Periwinkle Blue
         ];
 
         function getBlobzChatNameColor(name) {
-            if (!name) return '#0284c7';
+            if (!name) return '#00a8ff';
             var hash = 0;
             for (var k = 0; k < name.length; k++) {
                 hash = (hash * 31 + name.charCodeAt(k)) & 0xFFFFFFF;
@@ -1104,35 +1101,56 @@
             var cleanName = (item.name || '').replace('[Admin]', '').trim();
 
             var currentX = 10;
-            var yPos = chatCanvas.height / scaleFactor - 26 * (len - i - from);
+            var yPos = chatCanvas.height / scaleFactor - 22 * (len - i - from);
 
-            // If user is Admin (Reigns), render the red [Admin] badge with black outline first
+            ctx.save();
+            ctx.font = 'bold 15px Arial, sans-serif';
+            ctx.lineJoin = 'round';
+            ctx.miterLimit = 2;
+
             if (isUserAdmin) {
-                var adminTag = new UText(18, '#FF1E27', 1, '#000000');
-                adminTag.setValue('[Admin] ');
-                var adminRender = adminTag.render();
-                var adminWidth = adminTag.getWidth();
-                ctx.drawImage(adminRender, currentX, yPos);
-                currentX += adminWidth + 2;
+                // [Admin] tag in orange-red (#ff4500 / #ff5722)
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#000000';
+                ctx.strokeText('[Admin] ', currentX, yPos + 15);
+                ctx.fillStyle = '#ff4500';
+                ctx.fillText('[Admin] ', currentX, yPos + 15);
+
+                var adminWidth = ctx.measureText('[Admin] ').width;
+                currentX += adminWidth;
+
+                // Admin Name in matching orange-red (#ff4500)
+                var fullAdminName = cleanName + ' :';
+                ctx.strokeText(fullAdminName, currentX, yPos + 15);
+                ctx.fillStyle = '#ff4500';
+                ctx.fillText(fullAdminName, currentX, yPos + 15);
+
+                var nameWidth = ctx.measureText(fullAdminName).width;
+                currentX += nameWidth + 8;
+            } else {
+                // Regular player: shade of blue with bold black stroke
+                var nameColor = getBlobzChatNameColor(cleanName);
+                var fullName = cleanName + ' :';
+
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#000000';
+                ctx.strokeText(fullName, currentX, yPos + 15);
+                ctx.fillStyle = nameColor;
+                ctx.fillText(fullName, currentX, yPos + 15);
+
+                var nameWidth = ctx.measureText(fullName).width;
+                currentX += nameWidth + 8;
             }
 
-            // Name: Authentic Blobz Blue / Cyan / Turquoise palette with black outline
-            var nameColor = isUserAdmin ? '#FF3344' : getBlobzChatNameColor(cleanName);
-            var chatName = new UText(18, nameColor, 1, '#000000');
-            chatName.setValue(cleanName + ' :');
-            var nameRender = chatName.render();
-            var nameWidth = chatName.getWidth();
-            ctx.drawImage(nameRender, currentX, yPos);
-            currentX += nameWidth;
+            // Message text: pure white with bold black outline
+            var msgText = item.message || '';
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#000000';
+            ctx.strokeText(msgText, currentX, yPos + 15);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(msgText, currentX, yPos + 15);
 
-            // Message: Crisp dark text (#1e293b) with white stroke for maximum contrast
-            var chatText = new UText(18, isUserAdmin ? '#0f172a' : '#1e293b', 1, '#ffffff');
-            chatText.setValue(item.message);
-            var textRender = chatText.render();
-
-            // Column spacing: ensure message never overlaps name, with clean separation
-            var messageX = Math.max(currentX + 12, 170);
-            ctx.drawImage(textRender, messageX, yPos);
+            ctx.restore();
         }
     }
     function updateNodes(view, offset) {
