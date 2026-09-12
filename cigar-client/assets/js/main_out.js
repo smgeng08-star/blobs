@@ -405,16 +405,29 @@
             bPressed = 0,
             vPressed = 0,
             nPressed = 0,
+            spaceInterval = null,
             wInterval = null,
             rInterval = null;
         wHandle.onkeydown = function(event) {
             if (hasOverlay) return;
             switch (event.keyCode) {
-                case 32: // SPACE key
-                    if (!spacePressed && !isTyping && !hasOverlay) {
+                case 32: // SPACE key (Macro Split)
+                    if (!isTyping && !hasOverlay) {
                         sendMouseMove();
                         sendUint8(17);
-                        spacePressed = 1;
+                        if (!spacePressed) {
+                            spacePressed = 1;
+                            if (spaceInterval) clearInterval(spaceInterval);
+                            spaceInterval = setInterval(function() {
+                                if (spacePressed && !hasOverlay && !isTyping) {
+                                    sendMouseMove();
+                                    sendUint8(17);
+                                } else {
+                                    clearInterval(spaceInterval);
+                                    spaceInterval = null;
+                                }
+                            }, 50);
+                        }
                     }
                     break;
                 case 81: // Q key
@@ -612,6 +625,10 @@
             switch (event.keyCode) {
                 case 32:
                     spacePressed = 0;
+                    if (spaceInterval) {
+                        clearInterval(spaceInterval);
+                        spaceInterval = null;
+                    }
                     break;
                 case 87:
                     wPressed = 0;
