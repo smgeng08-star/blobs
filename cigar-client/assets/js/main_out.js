@@ -1077,6 +1077,27 @@
         var len = chatBoard.length;
         var from = len - 10; // Max amount of lines to display on a chat board
         if (from < 0) from = 0;
+        var blobzChatColors = [
+            '#0284c7', // Sky Blue
+            '#0ea5e9', // Vivid Blue
+            '#06b6d4', // Cyan
+            '#0891b2', // Deep Cyan
+            '#14b8a6', // Teal / Turquoise
+            '#0d9488', // Dark Teal
+            '#38bdf8', // Light Azure
+            '#2563eb', // Royal Blue
+            '#0096e6'  // Original Blobs Blue
+        ];
+
+        function getBlobzChatNameColor(name) {
+            if (!name) return '#0284c7';
+            var hash = 0;
+            for (var k = 0; k < name.length; k++) {
+                hash = (hash * 31 + name.charCodeAt(k)) & 0xFFFFFFF;
+            }
+            return blobzChatColors[Math.abs(hash) % blobzChatColors.length];
+        }
+
         for (var i = 0; i < (len - from); i++) {
             var item = chatBoard[i + from];
             var isUserAdmin = (item.name && item.name.trim().toLowerCase() === 'reigns') || (item.name && item.name.indexOf('[Admin]') !== -1);
@@ -1095,8 +1116,9 @@
                 currentX += adminWidth + 2;
             }
 
-            // Name: Electric vibrant color / skin color with dark outline
-            var chatName = new UText(18, isUserAdmin ? '#FF3344' : (item.color || '#2563eb'), 1, '#000000');
+            // Name: Authentic Blobz Blue / Cyan / Turquoise palette with black outline
+            var nameColor = isUserAdmin ? '#FF3344' : getBlobzChatNameColor(cleanName);
+            var chatName = new UText(18, nameColor, 1, '#000000');
             chatName.setValue(cleanName + ' :');
             var nameRender = chatName.render();
             var nameWidth = chatName.getWidth();
