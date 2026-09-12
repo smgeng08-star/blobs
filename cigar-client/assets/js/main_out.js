@@ -45,12 +45,37 @@
             osc.start(now);
             osc.stop(now + 0.4);
         } else if (type === 'death') {
-            // Play exact Game Over audio clip from assets/audio/gameover.mp3
-            try {
-                var audio = new Audio('assets/audio/gameover.mp3?v=' + Date.now());
-                audio.volume = Math.max(0, Math.min(1, wHandle.soundVolume));
-                audio.play().catch(function(){});
-            } catch(e){}
+            // Clean, punchy 0.35s defeat thud & bass drop (satisfying & non-intrusive)
+            var osc = ctx.createOscillator();
+            var oscSub = ctx.createOscillator();
+            var gain = ctx.createGain();
+            var gainSub = ctx.createGain();
+
+            osc.type = 'triangle';
+            oscSub.type = 'sine';
+
+            osc.frequency.setValueAtTime(160, now);
+            osc.frequency.exponentialRampToValueAtTime(40, now + 0.32);
+
+            oscSub.frequency.setValueAtTime(90, now);
+            oscSub.frequency.exponentialRampToValueAtTime(30, now + 0.35);
+
+            gain.gain.setValueAtTime(0.42, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+
+            gainSub.gain.setValueAtTime(0.35, now);
+            gainSub.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+            osc.connect(gain);
+            gain.connect(masterGain);
+
+            oscSub.connect(gainSub);
+            gainSub.connect(masterGain);
+
+            osc.start(now);
+            oscSub.start(now);
+            osc.stop(now + 0.35);
+            oscSub.stop(now + 0.38);
         } else if (type === 'virus') {
             // Sharp shattering noise burst + pop
             var osc = ctx.createOscillator();
