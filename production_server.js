@@ -260,7 +260,7 @@ var server = http.createServer(function(req, res) {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
             server1: { name: 'נסיוני אתגרי', count: s1Humans, max: 90 },
-            server2: { name: 'קלאסי ראשי', count: s2Humans, max: 90 }
+            server2: { name: 'קלאסי', count: s2Humans, max: 90 }
         }));
         return;
     }
