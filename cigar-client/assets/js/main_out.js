@@ -411,22 +411,25 @@
         wHandle.onkeydown = function(event) {
             if (hasOverlay) return;
             switch (event.keyCode) {
-                case 32: // SPACE key (Macro Split)
+                case 32: // SPACE key (Macro Split strictly on Self-Feed server :3002)
                     if (!isTyping && !hasOverlay) {
                         sendMouseMove();
                         sendUint8(17);
                         if (!spacePressed) {
                             spacePressed = 1;
-                            if (spaceInterval) clearInterval(spaceInterval);
-                            spaceInterval = setInterval(function() {
-                                if (spacePressed && !hasOverlay && !isTyping) {
-                                    sendMouseMove();
-                                    sendUint8(17);
-                                } else {
-                                    clearInterval(spaceInterval);
-                                    spaceInterval = null;
-                                }
-                            }, 50);
+                            var isSelfFeed = (CONNECTION_URL && CONNECTION_URL.indexOf('3002') !== -1) || (wsUrl && wsUrl.indexOf('3002') !== -1);
+                            if (isSelfFeed) {
+                                if (spaceInterval) clearInterval(spaceInterval);
+                                spaceInterval = setInterval(function() {
+                                    if (spacePressed && !hasOverlay && !isTyping) {
+                                        sendMouseMove();
+                                        sendUint8(17);
+                                    } else {
+                                        clearInterval(spaceInterval);
+                                        spaceInterval = null;
+                                    }
+                                }, 50);
+                            }
                         }
                     }
                     break;
