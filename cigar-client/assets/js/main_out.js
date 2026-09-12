@@ -1094,10 +1094,6 @@
             var killedNode = nodes[killedId];
             if (killedNode) {
                 var wasPlayerCell = (-1 != playerCells.indexOf(killedNode));
-                var isVirusEaten = killedNode.isVirus || (killer && killer.isVirus);
-                if (isVirusEaten && typeof wHandle.playGameSound === 'function') {
-                    wHandle.playGameSound('virus');
-                }
                 killedNode.destroy();
                 if (killer && (killedNode.size > 22 || killedNode.name || killedNode.isVirus)) {
                     killedNode.ox = killedNode.x;
