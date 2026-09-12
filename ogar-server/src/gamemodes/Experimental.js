@@ -104,11 +104,11 @@ MotherCell.prototype.eat = function() {
     var foodMass = this.gameServer.config.foodMass || 1;
 
     // BALANCED DYNAMIC DISCHARGE & SMOOTH SHRINKING:
-    // When mass > baseMass (200), shoots out normal food pellets at a smooth, balanced rate
+    // When mass > baseMass (200), shoots out normal food pellets at a smooth, steady and balanced rate
     if (this.mass > baseMass) {
         var excess = this.mass - baseMass;
-        // Balanced emission curve: 1 to 10 pellets per tick (smooth and visible flow, not instant spray)
-        var pelletsToEmit = Math.max(1, Math.min(Math.floor(excess * 0.02) + 1, 10));
+        // Steady emission curve: 1 to 4 pellets per tick (subtle, beautiful and authentic flow)
+        var pelletsToEmit = Math.max(1, Math.min(Math.floor(excess * 0.008) + 1, 4));
         pelletsToEmit = Math.min(pelletsToEmit, excess);
 
         for (var k = 0; k < pelletsToEmit; k++) {
