@@ -9,20 +9,50 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link href="assets/css/bootstrap.min.css?v=20260912_35" rel="stylesheet">
-    <link href="assets/css/index.css?v=20260912_35" rel="stylesheet">
+    <link href="assets/css/bootstrap.min.css?v=20260912_36" rel="stylesheet">
+    <link href="assets/css/index.css?v=20260912_36" rel="stylesheet">
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/vector.js?v=20260912_35"></script>
-    <script src="assets/js/main_out.js?v=20260912_35"></script>
+    <script src="assets/js/vector.js?v=20260912_36"></script>
+    <script src="assets/js/main_out.js?v=20260912_36"></script>
     <script>
+        // Instant synchronous auth execution before render
+        function quickAuthInit() {
+            try {
+                var loggedUser = localStorage.getItem('blobz_logged_user');
+                if (loggedUser) {
+                    var loginTab = document.getElementById('b-tab-login');
+                    var botsTab = document.getElementById('b-tab-bots');
+                    var regTab = document.getElementById('b-tab-reg');
+                    var loginForm = document.getElementById('login-view-form');
+                    var authView = document.getElementById('login-view-authenticated');
+                    var nameEl = document.getElementById('auth-display-name');
+                    var nickInput = document.getElementById('nick');
+                    var adminBtn = document.getElementById('admin-floating-btn');
+
+                    if (loginTab) loginTab.innerText = loggedUser;
+                    if (botsTab) botsTab.style.display = 'block';
+                    if (regTab) regTab.style.display = 'none';
+                    if (loginForm) loginForm.style.display = 'none';
+                    if (authView) authView.style.display = 'block';
+                    if (nameEl) nameEl.innerText = loggedUser;
+                    if (nickInput) nickInput.value = loggedUser;
+                    if (adminBtn && loggedUser.toLowerCase() === 'reigns') adminBtn.style.display = 'flex';
+                }
+            } catch(e){}
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            quickAuthInit();
+            if (typeof updateAuthUI === 'function') updateAuthUI();
+        });
+
         $(function() {
+            quickAuthInit();
+            if (typeof updateAuthUI === 'function') updateAuthUI();
             $('#overlays').show();
-            setTimeout(function() {
-                var defaultHost = location.host;
-                if (typeof setServer === 'function') setServer(defaultHost);
-                $('#gamemode option').first().val(defaultHost);
-                $('#overlays').show();
-            }, 300);
+            var defaultHost = location.host;
+            if (typeof setServer === 'function') setServer(defaultHost);
+            $('#gamemode option').first().val(defaultHost);
         });
     </script>
 </head>
