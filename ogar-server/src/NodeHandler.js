@@ -100,11 +100,11 @@ NodeHandler.prototype.update = function() {
             // Mass decay with progressive scaling for large cells
             if (cell.mass >= this.gameServer.config.playerMinMassDecay) {
                 // Progressive mass decay scaling factor:
-                // Small cells (e.g. < 1000) decay normally
-                // Medium/Large cells (2,000 - 50,000) experience progressively higher decay rate
+                // Small cells (< 600) decay normally
+                // Medium/Large cells (1,000 - 50,000) experience significantly higher decay rate as they grow
                 var scaleFactor = 1.0;
-                if (cell.mass > 1000) {
-                    scaleFactor = 1.0 + Math.pow(cell.mass / 2500, 0.75);
+                if (cell.mass > 600) {
+                    scaleFactor = 1.0 + Math.pow(cell.mass / 1200, 0.85);
                 }
                 var effectiveDecayRate = (this.gameServer.config.playerMassDecayRate || 0.002) * scaleFactor;
                 var effectiveDecay = 1 - (effectiveDecayRate * this.gameServer.gameMode.decayMod / 25);
