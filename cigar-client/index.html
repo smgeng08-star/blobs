@@ -9,11 +9,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link href="assets/css/bootstrap.min.css?v=20260912_20" rel="stylesheet">
-    <link href="assets/css/index.css?v=20260912_20" rel="stylesheet">
+    <link href="assets/css/bootstrap.min.css?v=20260912_21" rel="stylesheet">
+    <link href="assets/css/index.css?v=20260912_21" rel="stylesheet">
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/vector.js?v=20260912_20"></script>
-    <script src="assets/js/main_out.js?v=20260912_20"></script>
+    <script src="assets/js/vector.js?v=20260912_21"></script>
+    <script src="assets/js/main_out.js?v=20260912_21"></script>
     <script>
         $(function() {
             $('#overlays').show();
@@ -372,8 +372,8 @@
         </div>
     </div>
 
-    <!-- Admin Panel Floating Toggle Button (Visible for Reigns or via Key `~` or F2) -->
-    <div id="admin-floating-btn" onclick="toggleAdminPanel()" style="position:fixed; top:12px; left:50%; transform:translateX(-50%); z-index:1000; background:linear-gradient(135deg, #dc2626, #991b1b); color:#ffffff; border:1.5px solid #ef4444; border-radius:8px; padding:6px 16px; font-family:'Rubik', sans-serif; font-size:13px; font-weight:900; cursor:pointer; box-shadow:0 4px 15px rgba(220,38,38,0.4); display:flex; align-items:center; gap:6px; transition:transform 0.15s ease;">
+    <!-- Admin Panel Floating Toggle Button (Strictly Visible ONLY for user Reigns) -->
+    <div id="admin-floating-btn" onclick="toggleAdminPanel()" style="display:none; position:fixed; top:12px; left:50%; transform:translateX(-50%); z-index:1000; background:linear-gradient(135deg, #dc2626, #991b1b); color:#ffffff; border:1.5px solid #ef4444; border-radius:8px; padding:6px 16px; font-family:'Rubik', sans-serif; font-size:13px; font-weight:900; cursor:pointer; box-shadow:0 4px 15px rgba(220,38,38,0.4); align-items:center; gap:6px; transition:transform 0.15s ease;">
         <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#4ade80; box-shadow:0 0 8px #4ade80;"></span>
         <span>פאנל ניהול [Admin]</span>
     </div>
@@ -489,6 +489,10 @@
 
     <script>
         function toggleAdminPanel() {
+            var loggedUser = localStorage.getItem('blobz_logged_user') || '';
+            if (loggedUser.trim().toLowerCase() !== 'reigns') {
+                return; // Non-admin cannot open panel
+            }
             var panel = $('#admin-panel-modal');
             if (panel.is(':visible')) {
                 panel.fadeOut(150);
@@ -952,6 +956,16 @@
                 }
                 try { localStorage.setItem('blobz_account_mode', 'user'); } catch(e){}
 
+                // Admin Button strictly for Reigns
+                var adminBtn = document.getElementById('admin-floating-btn');
+                if (adminBtn) {
+                    if (loggedUser.toLowerCase() === 'reigns') {
+                        adminBtn.style.display = 'flex';
+                    } else {
+                        adminBtn.style.display = 'none';
+                    }
+                }
+
                 // Load user-specific persistent skin
                 var userSkin = null;
                 try {
@@ -1012,6 +1026,8 @@
                     chatInput.placeholder = 'לחץ אנטר - למשתמשים רשומים בלבד';
                     chatInput.style.cursor = 'default';
                 }
+                var adminBtn = document.getElementById('admin-floating-btn');
+                if (adminBtn) adminBtn.style.display = 'none';
                 selectBlobsSkin();
                 try { localStorage.setItem('blobz_account_mode', 'guest'); } catch(e){}
             }
