@@ -257,10 +257,12 @@ var server = http.createServer(function(req, res) {
     if (reqUrl === '/api/servers/status' && req.method === 'GET') {
         var s1Humans = gameServer1 ? gameServer1.getHumanCount() : 0;
         var s2Humans = gameServer2 ? gameServer2.getHumanCount() : 0;
+        var s3Humans = gameServer3 ? gameServer3.getHumanCount() : 0;
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
             server1: { name: 'נסיוני אתגרי', count: s1Humans, max: 90 },
-            server2: { name: 'קלאסי', count: s2Humans, max: 90 }
+            server2: { name: 'קלאסי', count: s2Humans, max: 90 },
+            server3: { name: 'סלף פיד מהיר', count: s3Humans, max: 90 }
         }));
         return;
     }
@@ -268,11 +270,16 @@ var server = http.createServer(function(req, res) {
     // Admin API Endpoints
     if (reqUrl === '/api/admin/players' && req.method === 'GET') {
         var playerList = [];
-        var allServers = [gameServer1, gameServer2];
+        var allServers = [
+            { gs: gameServer1, name: 'נסיוני' },
+            { gs: gameServer2, name: 'קלאסי' },
+            { gs: gameServer3, name: 'סלף פיד' }
+        ];
         for (var s = 0; s < allServers.length; s++) {
-            var gs = allServers[s];
+            var item = allServers[s];
+            var gs = item.gs;
             if (!gs) continue;
-            var serverTag = (s === 0) ? 'נסיוני' : 'קלאסי';
+            var serverTag = item.name;
             for (var cIdx = 0; cIdx < gs.clients.length; cIdx++) {
                 var cl = gs.clients[cIdx];
                 if (cl && cl.playerTracker && !cl.fullyDisconnected) {
@@ -307,7 +314,7 @@ var server = http.createServer(function(req, res) {
                 var mass = parseInt(data.mass) || 1000;
                 var found = false;
 
-                var allServers = [gameServer1, gameServer2];
+                var allServers = [gameServer1, gameServer2, gameServer3];
                 for (var s = 0; s < allServers.length; s++) {
                     var gs = allServers[s];
                     if (!gs) continue;
@@ -344,7 +351,7 @@ var server = http.createServer(function(req, res) {
                 var count = parseInt(data.count) || 25;
                 var found = false;
 
-                var allServers = [gameServer1, gameServer2];
+                var allServers = [gameServer1, gameServer2, gameServer3];
                 for (var s = 0; s < allServers.length; s++) {
                     var gs = allServers[s];
                     if (!gs) continue;
@@ -381,7 +388,7 @@ var server = http.createServer(function(req, res) {
                 var pID = data.pID;
                 var removedCount = 0;
 
-                var allServers = [gameServer1, gameServer2];
+                var allServers = [gameServer1, gameServer2, gameServer3];
                 for (var s = 0; s < allServers.length; s++) {
                     var gs = allServers[s];
                     if (!gs) continue;
@@ -417,6 +424,7 @@ var server = http.createServer(function(req, res) {
         setTimeout(function() {
             if (gameServer1) gameServer1.restartGame();
             if (gameServer2) gameServer2.restartGame();
+            if (gameServer3) gameServer3.restartGame();
         }, 100);
         return;
     }
@@ -454,18 +462,34 @@ gameServer1.config.serverBots = 5; // 5 bots
 gameServer1.gameMode = gameServer1.pluginHandler.gamemodes.retrieveGamemode(2);
 gameServer1.startWithHttpServer(server);
 
-// 3. Initialize GameServer 2 (Classic FFA / קלאסי ראשי) on port 3001
+// 3. Initialize GameServer 2 (Classic FFA / קלאסי) on port 3001
 var CLASSIC_PORT = process.env.CLASSIC_PORT || 3001;
 var gameServer2 = new GameServer();
 gameServer2.config.serverPort = CLASSIC_PORT;
-gameServer2.config.serverGamemode = 0; // Classic FFA (No red mother viruses, standard green viruses only)
+gameServer2.config.serverGamemode = 0; // Classic FFA
 gameServer2.config.playerMaxCells = 16; // Classic FFA maximum 16 splits
 gameServer2.config.serverBots = 5; // 5 bots
 gameServer2.gameMode = gameServer2.pluginHandler.gamemodes.retrieveGamemode(0);
 gameServer2.start();
 
+// 4. Initialize GameServer 3 (Self-Feed / סלף פיד מהיר) on port 3002
+var SELFFEED_PORT = process.env.SELFFEED_PORT || 3002;
+var gameServer3 = new GameServer();
+gameServer3.config.serverPort = SELFFEED_PORT;
+gameServer3.config.serverGamemode = 0; // FFA base
+gameServer3.config.playerMaxCells = 64; // Mega split (64 cells)
+gameServer3.config.playerRecombineTime = 3; // Ultra fast merge (3 seconds)
+gameServer3.config.ejectMass = 35; // Bigger eject
+gameServer3.config.ejectMassCooldown = 15; // Fast W
+gameServer3.config.ejectMassLoss = 36;
+gameServer3.config.ejectSpeed = 160; // Long distance eject for pop-splits
+gameServer3.config.serverBots = 5; // 5 bots
+gameServer3.gameMode = gameServer3.pluginHandler.gamemodes.retrieveGamemode(0);
+gameServer3.start();
+
 server.listen(PORT, function() {
     console.log('[Unified Server] Agar.io game & website running on port ' + PORT);
     console.log('[Unified Server] Server 1 (Experimental) on port ' + PORT);
     console.log('[Unified Server] Server 2 (Classic FFA) on port ' + CLASSIC_PORT);
+    console.log('[Unified Server] Server 3 (Self-Feed Fast) on port ' + SELFFEED_PORT);
 });

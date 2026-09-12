@@ -9,11 +9,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link href="assets/css/bootstrap.min.css?v=20260912_43" rel="stylesheet">
-    <link href="assets/css/index.css?v=20260912_43" rel="stylesheet">
+    <link href="assets/css/bootstrap.min.css?v=20260912_44" rel="stylesheet">
+    <link href="assets/css/index.css?v=20260912_44" rel="stylesheet">
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/vector.js?v=20260912_43"></script>
-    <script src="assets/js/main_out.js?v=20260912_43"></script>
+    <script src="assets/js/vector.js?v=20260912_44"></script>
+    <script src="assets/js/main_out.js?v=20260912_44"></script>
     <script>
         // Instant synchronous auth execution before render
         function quickAuthInit() {
@@ -53,12 +53,15 @@
 
             var host1 = location.host; // Primary port (e.g. localhost:3000)
             var classicPort = '3001';
+            var selfFeedPort = '3002';
             var host2 = location.hostname + ':' + classicPort;
+            var host3 = location.hostname + ':' + selfFeedPort;
 
             var $select = $('#gamemode');
             $select.empty();
             $select.append($('<option>', { value: host1, text: '[שרת] נסיוני אתגרי (0/90)' }));
             $select.append($('<option>', { value: host2, text: '[שרת] קלאסי (0/90)' }));
+            $select.append($('<option>', { value: host3, text: '[שרת] סלף פיד מהיר (0/90)' }));
 
             if (typeof setServer === 'function') setServer(host1);
         });
@@ -139,8 +142,9 @@
                 <!-- Server Select Dropdown -->
                 <div style="margin-bottom:14px;">
                     <select id="gamemode" class="form-control" onchange="setServer($(this).val())" style="width:100%; border:1.5px solid #e2e8f0; border-radius:10px; padding:8px 12px; font-size:13.5px; font-weight:800; color:#1e293b; background:#f8fafc; height:40px; direction:rtl; outline:none; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.02); transition:border 0.15s ease;">
-                        <option value="127.0.0.1:3001" selected>[שרת] נסיוני אתגרי (0/90)</option>
-                        <option value="127.0.0.1:443">[שרת] קלאסי (0/90)</option>
+                        <option value="127.0.0.1:3000" selected>[שרת] נסיוני אתגרי (0/90)</option>
+                        <option value="127.0.0.1:3001">[שרת] קלאסי (0/90)</option>
+                        <option value="127.0.0.1:3002">[שרת] סלף פיד מהיר (0/90)</option>
                     </select>
                 </div>
 
@@ -929,9 +933,15 @@
 
         function updateServerPlayerCount(curr, max) {
             var currServerVal = $('#gamemode').val();
-            var isClassic = (currServerVal && currServerVal.indexOf(':3001') !== -1);
-            var selector = isClassic ? '#gamemode option:nth-child(2)' : '#gamemode option:nth-child(1)';
-            var serverName = isClassic ? '[שרת] קלאסי' : '[שרת] נסיוני אתגרי';
+            var selector = '#gamemode option:nth-child(1)';
+            var serverName = '[שרת] נסיוני אתגרי';
+            if (currServerVal && currServerVal.indexOf(':3001') !== -1) {
+                selector = '#gamemode option:nth-child(2)';
+                serverName = '[שרת] קלאסי';
+            } else if (currServerVal && currServerVal.indexOf(':3002') !== -1) {
+                selector = '#gamemode option:nth-child(3)';
+                serverName = '[שרת] סלף פיד מהיר';
+            }
             var opt = document.querySelector(selector);
             if (opt) {
                 opt.text = serverName + ' (' + (curr || 0) + '/' + (max || 90) + ')';
@@ -950,6 +960,10 @@
                     if (data && data.server2) {
                         var opt2 = document.querySelector('#gamemode option:nth-child(2)');
                         if (opt2) opt2.text = '[שרת] קלאסי (' + (data.server2.count || 0) + '/' + (data.server2.max || 90) + ')';
+                    }
+                    if (data && data.server3) {
+                        var opt3 = document.querySelector('#gamemode option:nth-child(3)');
+                        if (opt3) opt3.text = '[שרת] סלף פיד מהיר (' + (data.server3.count || 0) + '/' + (data.server3.max || 90) + ')';
                     }
                 })
                 .catch(function(e) {});
