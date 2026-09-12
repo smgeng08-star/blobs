@@ -413,12 +413,14 @@
             switch (event.keyCode) {
                 case 32: // SPACE key (Macro Split strictly on Self-Feed server :3002)
                     if (!isTyping && !hasOverlay) {
-                        sendMouseMove();
-                        sendUint8(17);
-                        if (!spacePressed) {
-                            spacePressed = 1;
-                            var isSelfFeed = (CONNECTION_URL && CONNECTION_URL.indexOf('3002') !== -1) || (wsUrl && wsUrl.indexOf('3002') !== -1);
-                            if (isSelfFeed) {
+                        var currServer = (typeof CONNECTION_URL !== 'undefined' && CONNECTION_URL ? CONNECTION_URL : '') + ' ' + (typeof wsUrl !== 'undefined' && wsUrl ? wsUrl : '') + ' ' + (typeof gameMode !== 'undefined' && gameMode ? gameMode : '');
+                        var isSelfFeed = currServer.indexOf('3002') !== -1;
+                        
+                        if (isSelfFeed) {
+                            sendMouseMove();
+                            sendUint8(17);
+                            if (!spacePressed) {
+                                spacePressed = 1;
                                 if (spaceInterval) clearInterval(spaceInterval);
                                 spaceInterval = setInterval(function() {
                                     if (spacePressed && !hasOverlay && !isTyping) {
@@ -429,6 +431,13 @@
                                         spaceInterval = null;
                                     }
                                 }, 50);
+                            }
+                        } else {
+                            // Classic & Experimental: Exactly ONE single split per physical key press, ignore OS key repeat
+                            if (!spacePressed) {
+                                spacePressed = 1;
+                                sendMouseMove();
+                                sendUint8(17);
                             }
                         }
                     }
