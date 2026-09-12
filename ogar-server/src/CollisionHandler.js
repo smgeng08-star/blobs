@@ -90,9 +90,8 @@ CollisionHandler.prototype.canEat = function(cell, check) {
         if (cell.mass < 16) {
             return false;
         }
-        // In Self-Feed server (ejectMassLoss == 0), you can eat W instantly and grow continuously!
-        // In regular servers, prevent the source cell from eating itself on tick 0
-        if (this.gameServer.config.ejectMassLoss > 0 && check.owner === cell.owner && check.sourceCellId === cell.nodeId && (check.firstTick || (check.ticksAlive && check.ticksAlive < 4))) {
+        // In all modes (including self feed), ejected mass must fly outward and not get re-absorbed inside the emitting cell before moving!
+        if (check.owner === cell.owner && check.sourceCellId === cell.nodeId && (check.firstTick || (check.ticksAlive && check.ticksAlive < 3))) {
             return false;
         }
         var r = cell.getSize() + (check.getSize() || 12);
