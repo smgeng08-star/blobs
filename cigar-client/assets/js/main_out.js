@@ -1073,7 +1073,7 @@
         chatCanvas.width = 1000 * scaleFactor;
         chatCanvas.height = 550 * scaleFactor;
         ctx.scale(scaleFactor, scaleFactor);
-        ctx.globalAlpha = .8;
+        ctx.globalAlpha = 1.0;
         var len = chatBoard.length;
         var from = len - 15; // Max amount of lines to display on a chat board (15 messages)
         if (from < 0) from = 0;
@@ -1142,14 +1142,21 @@
                 currentX += nameWidth;
             }
 
-            // Message text column: shifted rightwards (at least 215px or currentX + 20) matching authentic Blobz screenshot
+            // Message text column: glowing bright white (#ffffff) with black outline
             var msgX = Math.max(currentX + 20, 215);
             var msgText = item.message || '';
-            ctx.lineWidth = 3;
+
+            // Black outline
+            ctx.lineWidth = 3.5;
             ctx.strokeStyle = '#000000';
             ctx.strokeText(msgText, msgX, yPos + 15);
+
+            // Glowing pure white fill
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.85)';
+            ctx.shadowBlur = 4;
             ctx.fillStyle = '#ffffff';
             ctx.fillText(msgText, msgX, yPos + 15);
+            ctx.fillText(msgText, msgX, yPos + 15); // double fill for vibrant pop
 
             ctx.restore();
         }
