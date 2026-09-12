@@ -47,7 +47,7 @@
         } else if (type === 'death') {
             // Play exact Game Over audio clip from assets/audio/gameover.mp3
             try {
-                var audio = new Audio('assets/audio/gameover.mp3?v=1');
+                var audio = new Audio('assets/audio/gameover.mp3?v=' + Date.now());
                 audio.volume = Math.max(0, Math.min(1, wHandle.soundVolume));
                 audio.play().catch(function(){});
             } catch(e){}
