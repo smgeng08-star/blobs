@@ -90,8 +90,9 @@ CollisionHandler.prototype.canEat = function(cell, check) {
         if (cell.mass < 16) {
             return false;
         }
-        // A cell cannot eat the mass ITSELF just shot in the first 5 ticks (125ms), but OTHER split cells of the same player CAN eat it immediately (Self-Feed)!
-        if (check.owner === cell.owner && check.sourceCellId === cell.nodeId && (check.firstTick || (check.ticksAlive && check.ticksAlive < 5))) {
+        // In Self-Feed server (ejectMassLoss == 0), you can eat W instantly and grow continuously!
+        // In regular servers, prevent the source cell from eating itself on tick 0
+        if (this.gameServer.config.ejectMassLoss > 0 && check.owner === cell.owner && check.sourceCellId === cell.nodeId && (check.firstTick || (check.ticksAlive && check.ticksAlive < 4))) {
             return false;
         }
         var r = cell.getSize() + (check.getSize() || 12);
