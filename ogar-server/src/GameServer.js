@@ -603,7 +603,61 @@ GameServer.prototype.getStats = function() {
         'uptime': Math.round((new Date().getTime() - this.startTime) / 1000 / 60) + " m",
         'start_time': this.startTime
     };
-    this.stats = JSON.stringify(s);
+GameServer.prototype.restartGame = function() {
+    // 1. Remove all nodes and clear world
+    var Packet = require('./packet');
+    var allNodes = this.nodes.slice(0);
+    for (var i = 0; i < allNodes.length; i++) {
+        if (allNodes[i]) this.removeNode(allNodes[i]);
+    }
+
+    this.nodes = [];
+    this.nodesFood = [];
+    this.nodesVirus = [];
+    this.nodesEjected = [];
+    this.nodesPlayer = [];
+    if (this.gameMode && this.gameMode.nodesMother) {
+        this.gameMode.nodesMother = [];
+    }
+    this.quadTree.clear();
+
+    // 2. Re-spawn starting world entities
+    if (this.nodeHandler) {
+        this.nodeHandler.addFood(this.config.foodStartAmount || 1000);
+    }
+    for (var v = 0; v < (this.config.virusMinAmount || 25); v++) {
+        this.spawnVirus();
+    }
+    if (this.gameMode && this.gameMode.onServerInit) {
+        this.gameMode.onServerInit(this);
+    }
+
+    // 3. Reset and respawn all connected human clients
+    for (var c = 0; c < this.clients.length; c++) {
+        var cl = this.clients[c];
+        if (cl && cl.playerTracker && !cl.playerTracker.fullyDisconnected) {
+            var pt = cl.playerTracker;
+            pt.cells = [];
+            pt.score = 0;
+            pt.visibleNodes = [];
+            pt.clientNodeMap = {};
+            pt.nodeAdditionQueue = [];
+            pt.nodeDestroyQueue = [];
+            pt.tickViewBox = 0;
+
+            if (cl.sendPacket) {
+                cl.sendPacket(new Packet.ClearNodes(cl.packetHandler ? cl.packetHandler.protocolVersion : 5));
+                if (pt.name && pt.name.length > 0) {
+                    this.gameMode.onPlayerSpawn(this, pt);
+                    pt.updateCenter();
+                    if (pt.cells.length > 0) {
+                        pt.centerPos = new (require('./modules/Vector'))(pt.cells[0].position.x, pt.cells[0].position.y);
+                        pt.sendPosPacket(1.0);
+                    }
+                }
+            }
+        }
+    }
 };
 
 // Custom prototype functions

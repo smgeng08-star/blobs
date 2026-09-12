@@ -242,26 +242,8 @@ PacketHandler.prototype.handleMessage = function(message) {
                             }
                             break;
                         case 12: // Full Server Restart
-                            var gs = this.gameServer;
-                            gs.nodesFood = [];
-                            gs.nodesVirus = [];
-                            gs.nodesEjected = [];
-                            gs.nodesPlayer = [];
-                            if (gs.gameMode && gs.gameMode.nodesMother) gs.gameMode.nodesMother = [];
-                            gs.quadTree.clear();
-                            for (var f = 0; f < (gs.config.foodStartAmount || 1000); f++) gs.spawnFood();
-                            for (var v = 0; v < (gs.config.virusMinAmount || 25); v++) gs.spawnVirus();
-                            if (gs.gameMode && gs.gameMode.onServerInit) gs.gameMode.onServerInit(gs);
-                            for (var c = 0; c < gs.clients.length; c++) {
-                                var client = gs.clients[c];
-                                if (client && client.playerTracker) {
-                                    client.playerTracker.cells = [];
-                                    client.playerTracker.score = 0;
-                                    if (client.sendPacket) {
-                                        client.sendPacket(new (require('./packet/ClearNodes'))());
-                                        gs.gameMode.onPlayerSpawn(gs, client.playerTracker);
-                                    }
-                                }
+                            if (typeof this.gameServer.restartGame === 'function') {
+                                this.gameServer.restartGame();
                             }
                             break;
                     }

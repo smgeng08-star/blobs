@@ -9,11 +9,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link href="assets/css/bootstrap.min.css?v=20260912_07" rel="stylesheet">
-    <link href="assets/css/index.css?v=20260912_07" rel="stylesheet">
+    <link href="assets/css/bootstrap.min.css?v=20260912_08" rel="stylesheet">
+    <link href="assets/css/index.css?v=20260912_08" rel="stylesheet">
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/vector.js?v=20260912_07"></script>
-    <script src="assets/js/main_out.js?v=20260912_07"></script>
+    <script src="assets/js/vector.js?v=20260912_08"></script>
+    <script src="assets/js/main_out.js?v=20260912_08"></script>
     <script>
         $(function() {
             $('#overlays').show();
@@ -524,18 +524,32 @@
                     }
                     data.players.forEach(function(p) {
                         var isMe = p.name && p.name.trim().toLowerCase() === 'reigns';
-                        var row = $('<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; border:1px solid #334155; border-radius:6px; padding:6px 10px; font-size:12px;"></div>');
-                        var info = $('<div><b>' + (p.name || 'שחקן') + '</b> ' + (isMe ? '<span style="color:#ef4444; font-size:10px;">(אתה)</span>' : '') + ' <span style="color:#94a3b8; font-size:11px;">[מסה: ' + p.mass + ']</span></div>');
-                        var btns = $('<div style="display:flex; gap:4px;"></div>');
+                        var row = $('<div style="display:flex; flex-direction:column; gap:6px; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:8px 10px; font-size:12px;"></div>');
+                        var topRow = $('<div style="display:flex; justify-content:space-between; align-items:center;"></div>');
+                        var info = $('<div><b style="color:#ffffff; font-size:13px;">' + (p.name || 'שחקן') + '</b> ' + (isMe ? '<span style="color:#ef4444; font-size:10px; font-weight:900;">(אתה)</span>' : '') + ' <span style="color:#94a3b8; font-size:11px;">[מסה: ' + p.mass + ' | תאים: ' + p.cells + ']</span></div>');
                         
-                        var b1000 = $('<button type="button" style="background:#0284c7; border:none; color:#fff; border-radius:4px; padding:3px 6px; font-size:11px; font-weight:800; cursor:pointer;">+1,000</button>');
+                        var quickBtns = $('<div style="display:flex; gap:4px;"></div>');
+                        var b1000 = $('<button type="button" style="background:#0284c7; border:none; color:#fff; border-radius:4px; padding:3px 7px; font-size:11px; font-weight:800; cursor:pointer;">+1,000</button>');
                         b1000.on('click', function() { adminGiveMassToPlayer(p.pID, p.name, 1000); });
-                        
-                        var b5000 = $('<button type="button" style="background:#0369a1; border:none; color:#fff; border-radius:4px; padding:3px 6px; font-size:11px; font-weight:800; cursor:pointer;">+5,000</button>');
+                        var b5000 = $('<button type="button" style="background:#0369a1; border:none; color:#fff; border-radius:4px; padding:3px 7px; font-size:11px; font-weight:800; cursor:pointer;">+5,000</button>');
                         b5000.on('click', function() { adminGiveMassToPlayer(p.pID, p.name, 5000); });
+                        var bBots = $('<button type="button" style="background:linear-gradient(135deg, #10b981, #059669); border:none; color:#fff; border-radius:4px; padding:3px 7px; font-size:11px; font-weight:800; cursor:pointer;">+25 בוטים</button>');
+                        bBots.on('click', function() { adminGiveBotsToPlayer(p.pID, p.name, 25); });
 
-                        btns.append(b1000).append(b5000);
-                        row.append(info).append(btns);
+                        quickBtns.append(b1000).append(b5000).append(bBots);
+                        topRow.append(info).append(quickBtns);
+
+                        // Custom mass input for this specific player
+                        var customRow = $('<div style="display:flex; gap:6px; align-items:center; border-top:1px solid #334155; padding-top:5px; margin-top:2px;"></div>');
+                        var customMassInput = $('<input type="number" placeholder="כמות מסה אישית (למשל 3000)..." style="flex:1; background:#0f172a; border:1px solid #475569; border-radius:4px; padding:4px 8px; font-size:11.5px; color:#ffffff; outline:none;" />');
+                        var customMassBtn = $('<button type="button" style="background:#38bdf8; border:none; color:#0f172a; border-radius:4px; padding:4px 10px; font-size:11px; font-weight:900; cursor:pointer;">הענק מסה</button>');
+                        customMassBtn.on('click', function() {
+                            var val = parseInt(customMassInput.val());
+                            if (val && val > 0) adminGiveMassToPlayer(p.pID, p.name, val);
+                        });
+
+                        customRow.append(customMassInput).append(customMassBtn);
+                        row.append(topRow).append(customRow);
                         container.append(row);
                     });
                 }
@@ -548,6 +562,18 @@
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ pID: pID, name: name, mass: mass }),
+                success: function(res) {
+                    refreshAdminPlayersList();
+                }
+            });
+        }
+
+        function adminGiveBotsToPlayer(pID, name, count) {
+            $.ajax({
+                url: '/api/admin/givebots',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ pID: pID, name: name, count: count || 25 }),
                 success: function(res) {
                     refreshAdminPlayersList();
                 }
