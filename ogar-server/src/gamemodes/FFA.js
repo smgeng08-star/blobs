@@ -17,50 +17,20 @@ FFA.prototype.onPlayerSpawn = function(gameServer, player) {
     // Random color
     player.color = gameServer.getRandomColor();
 
-    // Set up variables
-    var pos, startMass;
-
-    // Check if there are ejected mass in the world.
-    if (gameServer.nodesEjected.length > 0) {
-        var index = Math.floor(Math.random() * 100) + 1;
-        if (index >= gameServer.config.ejectSpawnPlayer) {
-            // Get ejected cell
-            index = Math.floor(Math.random() * gameServer.nodesEjected.length);
-            var e = gameServer.nodesEjected[index];
-            if (e.moveEngineTicks > 0) {
-                // Ejected cell is currently moving
-                gameServer.spawnPlayer(player, pos, startMass);
-            }
-
-            // Remove ejected mass
-            gameServer.removeNode(e);
-
-            // Inherit
-            pos = {
-                x: e.position.x,
-                y: e.position.y
-            };
-            if (player.isBot) {
-                startMass = 50;
-            } else if (player.owner || player.isMinion) {
-                startMass = player.customMass || 10;
-            } else if (player.name && player.name.trim().length > 0 && player.name.indexOf('Blobs#') !== 0) {
-                startMass = 30;
-            } else {
-                startMass = Math.max(e.mass, gameServer.config.playerStartMass);
-            }
-
-            var color = e.getColor();
-            player.setColor({
-                'r': color.r,
-                'g': color.g,
-                'b': color.b
-            });
-        }
+    // Determine start mass based on player type
+    var startMass;
+    if (player.isBot) {
+        startMass = 50;
+    } else if (player.owner || player.isMinion) {
+        startMass = player.customMass || 10;
+    } else if (player.name && player.name.trim().length > 0 && player.name.indexOf('Blobs#') !== 0) {
+        startMass = 30;
+    } else {
+        startMass = gameServer.config.playerStartMass || 10;
     }
 
-    // Spawn player
-    gameServer.spawnPlayer(player, pos, startMass);
+    // Spawn player cleanly and reliably
+    gameServer.spawnPlayer(player, null, startMass);
 };
 
 FFA.prototype.updateLB = function(gameServer) {

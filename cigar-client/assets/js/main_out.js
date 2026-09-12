@@ -861,6 +861,8 @@
     }
     function showOverlays(arg) {
         hasOverlay = 1;
+        nodesOnScreen = [];
+        playerCells = [];
         userNickName = null;
         if (arg) {
             wjQuery("#overlays").fadeIn(250);
@@ -873,7 +875,7 @@
         }
     }
     function showConnecting() {
-        if (!connecting) return;
+        connecting = 1;
         wjQuery("#connecting").show();
         wjQuery("#blobs-loading-dots").show();
         var protocol = (location.protocol === "https:") ? "wss://" : "ws://";
@@ -932,6 +934,11 @@
             sendUint8(1);
         } else if (userNickName) {
             sendNickName();
+            setTimeout(function() {
+                if (!hasOverlay && !wHandle.isSpectating && playerCells.length === 0 && wsIsOpen()) {
+                    sendNickName();
+                }
+            }, 150);
         }
     }
     function onWsClose() {
@@ -1878,9 +1885,20 @@
         userScore = 0;
 
         if (!wsIsOpen()) {
+            connecting = 1;
             showConnecting();
         } else {
             sendNickName();
+            setTimeout(function() {
+                if (!hasOverlay && !wHandle.isSpectating && playerCells.length === 0 && wsIsOpen()) {
+                    sendNickName();
+                }
+            }, 150);
+            setTimeout(function() {
+                if (!hasOverlay && !wHandle.isSpectating && playerCells.length === 0 && wsIsOpen()) {
+                    sendNickName();
+                }
+            }, 350);
         }
 
         if (typeof wHandle.playGameSound === 'function') {

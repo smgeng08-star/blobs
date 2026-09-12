@@ -24,6 +24,7 @@ PacketHandler.prototype.handleMessage = function(message) {
     switch (packetId) {
         case 0:
             // Set Nickname
+            if (!this.protocolVersion) this.protocolVersion = 5;
             var name = "";
             if (this.protocolVersion == 5) {
                 var nickBuf = message.slice(1);
@@ -47,7 +48,7 @@ PacketHandler.prototype.handleMessage = function(message) {
             pTracker.spectate = true;
             pTracker.freeRoam = false;
             pTracker.tickViewBox = 0;
-            this.socket.sendPacket(new Packet.ClearNodes());
+            this.socket.sendPacket(new Packet.ClearNodes(this.protocolVersion || 5));
             break;
         case 16:
             var client = this.socket.playerTracker;
@@ -392,7 +393,7 @@ PacketHandler.prototype.setNickname = function(newNick) {
         client.tickViewBox = 0;
 
         // Clear client's nodes
-        this.socket.sendPacket(new Packet.ClearNodes());
+        this.socket.sendPacket(new Packet.ClearNodes(this.protocolVersion || 5));
 
         // Spawn a player
         this.gameServer.gameMode.onPlayerSpawn(this.gameServer, client);
