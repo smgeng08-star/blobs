@@ -97,9 +97,21 @@ NodeHandler.prototype.update = function() {
             var t3e = process.hrtime(t3s),
                 t4s = process.hrtime();
 
-            // Mass decay (1:1 identical to OgarII formula)
+            // Mass decay
             if (cell.mass >= this.gameServer.config.playerMinMassDecay) {
-                cell.mass *= thisDecay;
+                if (this.gameServer.config.serverPort == 3002) {
+                    // Self-Feed mode (port 3002): Progressive mass decay for fast-paced action
+                    var scaleFactor = 1.0;
+                    if (cell.mass > 600) {
+                        scaleFactor = 1.0 + Math.pow(cell.mass / 1200, 0.85);
+                    }
+                    var effectiveDecayRate = (this.gameServer.config.playerMassDecayRate || 0.0055) * scaleFactor;
+                    var effectiveDecay = 1 - (effectiveDecayRate * this.gameServer.gameMode.decayMod / 25);
+                    cell.mass *= effectiveDecay;
+                } else {
+                    // Classic (port 3001) & Experimental (port 3000): 1:1 standard OgarII decay formula
+                    cell.mass *= thisDecay;
+                }
             }
 
             var t4e = process.hrtime(t4s);
