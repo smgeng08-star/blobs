@@ -450,14 +450,14 @@ NodeHandler.prototype.ejectMass = function(client) {
         }
 
         // 1:1 OgarII dispersion angle and boost speed (780 / 9 = 86.66)
-        var dispersion = client.isMinion ? 0.05 : (isClassicOrExp ? 0.3 : 0.05);
+        var dispersion = client.isMinion ? 0.05 : 0.08;
         var a = Math.atan2(dx, dy) - dispersion + (Math.random() * 2 * dispersion);
-        var boostSpeed = isClassicOrExp ? 86.66 : (this.gameServer.config.ejectSpeed || 100);
+        var boostSpeed = 48;
 
         // 1:1 OgarII start position right at cell perimeter
         var startPos = new Vector(
-            cell.position.x + (dx * size),
-            cell.position.y + (dy * size)
+            cell.position.x + (dx * (size + 10)),
+            cell.position.y + (dy * (size + 10))
         );
 
         // Remove mass from parent cell (1:1 OgarII ejectingLoss: 43 -> 43*43/100 ≈ 18.49)

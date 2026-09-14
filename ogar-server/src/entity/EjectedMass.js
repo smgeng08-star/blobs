@@ -4,8 +4,8 @@ function EjectedMass() {
     Cell.apply(this, Array.prototype.slice.call(arguments));
 
     this.cellType = 3;
-    this.size = 38; // 1:1 OgarII ejectedSize: 38
-    this.squareSize = 1444; // 38 * 38
+    this.size = 32; // 1:1 OgarII ejectedSize: 38
+    this.squareSize = 1024; // 38 * 38
     this.addedAntiTeam = false; // Not to affect anti-teaming two times
     this.isMoving = true;
     this.firstTick = true;
@@ -21,7 +21,7 @@ EjectedMass.prototype.moveEngineTick = function() {
 
     // 1:1 OgarII boost displacement and 8/9 friction decay
     this.position.add(this.moveEngine);
-    this.moveEngine.scale(8 / 9);
+    this.moveEngine.scale(0.85);
 
     if (this.moveEngine.distanceSq() < 1) {
         this.isMoving = false;
