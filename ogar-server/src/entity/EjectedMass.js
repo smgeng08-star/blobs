@@ -4,8 +4,8 @@ function EjectedMass() {
     Cell.apply(this, Array.prototype.slice.call(arguments));
 
     this.cellType = 3;
-    this.size = Math.ceil(Math.sqrt(100 * this.mass));
-    this.squareSize = (100 * this.mass) >> 0; // not being decayed -> calculate one time
+    this.size = 38; // 1:1 OgarII ejectedSize: 38
+    this.squareSize = 1444; // 38 * 38
     this.addedAntiTeam = false; // Not to affect anti-teaming two times
     this.isMoving = true;
     this.firstTick = true;

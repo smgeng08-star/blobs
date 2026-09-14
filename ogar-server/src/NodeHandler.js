@@ -412,9 +412,36 @@ NodeHandler.prototype.ejectMass = function(client) {
         var isClassicOrExp = (this.gameServer.config.serverPort != 3002);
         var size = cell.getSize();
 
-        // 1:1 OgarII vector calculation to mouse
-        var dx = client.mouse.x - cell.position.x;
-        var dy = client.mouse.y - cell.position.y;
+        // Direction calculation
+        var targetX = client.mouse.x;
+        var targetY = client.mouse.y;
+
+        // If minion is ejecting (R key), target owner's nearest cell or center position
+        if (client.isMinion && client.owner && client.owner.cells && client.owner.cells.length > 0) {
+            var nearestOwnerCell = null;
+            var nearestDist = Infinity;
+            for (var oc = 0; oc < client.owner.cells.length; oc++) {
+                var oCell = client.owner.cells[oc];
+                if (oCell && !oCell.eaten) {
+                    var distSq = (oCell.position.x - cell.position.x) * (oCell.position.x - cell.position.x) +
+                                 (oCell.position.y - cell.position.y) * (oCell.position.y - cell.position.y);
+                    if (distSq < nearestDist) {
+                        nearestDist = distSq;
+                        nearestOwnerCell = oCell;
+                    }
+                }
+            }
+            if (nearestOwnerCell) {
+                targetX = nearestOwnerCell.position.x;
+                targetY = nearestOwnerCell.position.y;
+            } else if (client.owner.centerPos) {
+                targetX = client.owner.centerPos.x;
+                targetY = client.owner.centerPos.y;
+            }
+        }
+
+        var dx = targetX - cell.position.x;
+        var dy = targetY - cell.position.y;
         var d = Math.sqrt(dx * dx + dy * dy);
         if (d < 1) {
             dx = 1; dy = 0; d = 1;
@@ -422,20 +449,20 @@ NodeHandler.prototype.ejectMass = function(client) {
             dx /= d; dy /= d;
         }
 
-        // Starting position right at cell boundary
+        // 1:1 OgarII dispersion angle and boost speed (780 / 9 = 86.66)
+        var dispersion = client.isMinion ? 0.05 : (isClassicOrExp ? 0.3 : 0.05);
+        var a = Math.atan2(dx, dy) - dispersion + (Math.random() * 2 * dispersion);
+        var boostSpeed = isClassicOrExp ? 86.66 : (this.gameServer.config.ejectSpeed || 100);
+
+        // 1:1 OgarII start position right at cell perimeter
         var startPos = new Vector(
             cell.position.x + (dx * size),
             cell.position.y + (dy * size)
         );
 
-        // Remove mass from parent cell
-        var massLoss = isClassicOrExp ? (this.gameServer.config.ejectMassLoss || 15) : (this.gameServer.config.ejectMassLoss || 0);
+        // Remove mass from parent cell (1:1 OgarII ejectingLoss: 43 -> 43*43/100 ≈ 18.49)
+        var massLoss = isClassicOrExp ? (this.gameServer.config.ejectMassLoss || 18) : (this.gameServer.config.ejectMassLoss || 0);
         cell.mass -= massLoss;
-
-        // 1:1 OgarII dispersion angle and boost speed (780 / 9 = 86.66)
-        var dispersion = isClassicOrExp ? 0.3 : 0.05;
-        var a = Math.atan2(dx, dy) - dispersion + (Math.random() * 2 * dispersion);
-        var boostSpeed = isClassicOrExp ? 86.66 : (this.gameServer.config.ejectSpeed || 100);
 
         // Create cell
         var ejected = new Entity.EjectedMass(
