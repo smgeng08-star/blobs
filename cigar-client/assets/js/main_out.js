@@ -887,6 +887,12 @@
         wsConnect(protocol + (CONNECTION_URL || location.host));
     }
     function wsConnect(wsUrl) {
+        // Cancel any pending auto-reconnect timer — prevents it from
+        // killing the new connection we're about to open
+        if (wsReconnectTimer) {
+            clearTimeout(wsReconnectTimer);
+            wsReconnectTimer = null;
+        }
         if (ws) {
             ws.onopen = null;
             ws.onmessage = null;
@@ -948,10 +954,10 @@
     }
     function onWsClose() {
         if (playerCells.length === 0) {
-            delay = 500; // Reset so next "Start Game" connects immediately
+            delay = 500;
             showOverlays(1);
         }
-        setTimeout(showConnecting, delay);
+        wsReconnectTimer = setTimeout(showConnecting, delay);
         console.log("Socket closed");
         delay *= 1.5;
     }
@@ -1817,6 +1823,7 @@
         canvasHeight,
         qTree = null,
         ws = null,
+        wsReconnectTimer = null,
         nodeX = 0,
         nodeY = 0,
         nodesOnScreen = [],
