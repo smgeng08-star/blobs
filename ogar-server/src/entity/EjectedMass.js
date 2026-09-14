@@ -17,11 +17,22 @@ EjectedMass.prototype = new Cell();
 
 EjectedMass.prototype.moveEngineTick = function() {
     this.ticksAlive++;
-    if (this.firstTick) {
-        this.firstTick = false;
-        return;
+    if (!this.gameServer || !this.isMoving) return;
+
+    // 1:1 OgarII boost displacement and 8/9 friction decay
+    this.position.add(this.moveEngine);
+    this.moveEngine.scale(8 / 9);
+
+    if (this.moveEngine.distanceSq() < 1) {
+        this.isMoving = false;
+        this.moveEngine.set(0, 0);
     }
-    Cell.prototype.moveEngineTick.call(this);
+
+    // Check for border passage and bounce
+    this.borderCheck(true);
+    if (this.gameServer.quadTree) {
+        this.gameServer.quadTree.update(this);
+    }
 };
 
 // Override getName which uses 'owner' variable

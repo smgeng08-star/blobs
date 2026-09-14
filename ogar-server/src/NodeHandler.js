@@ -445,8 +445,8 @@ NodeHandler.prototype.ejectMass = function(client) {
         );
         ejected.sourceCellId = cell.nodeId; // Track which specific cell shot this mass
         ejected.moveEngine = new Vector(
-            -Math.sin(a) * boostSpeed,
-            -Math.cos(a) * boostSpeed
+            Math.sin(a) * boostSpeed,
+            Math.cos(a) * boostSpeed
         );
         ejected.setColor(cell.getColor());
 

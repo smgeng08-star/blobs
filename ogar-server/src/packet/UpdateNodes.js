@@ -78,6 +78,7 @@ UpdateNodes.prototype.build = function() {
         } else {
             // Flags
             if (node.spiked) flags += 1;
+            if (node.cellType == 3) flags |= 0x20; // Authentic Agar.io / OgarII ejected mass flag
 
             buffer.setUint8(colors[0]);                                         // Node's R color
             buffer.setUint8(colors[1]);                                         // Node's G color
