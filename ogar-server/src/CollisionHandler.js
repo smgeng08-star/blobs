@@ -86,8 +86,9 @@ CollisionHandler.prototype.canEat = function(cell, check) {
 
     // Ejected mass (cellType 3) is consumed at the cell border
     if (check.cellType == 3) {
-        // In authentic Agar.io, cells cannot eat ejected mass below 16 mass
-        if (cell.mass < 16) {
+        // In authentic Agar.io / OgarII, cells cannot eat ejected mass below 19 mass (size < 43.33)
+        var minMass = (this.gameServer && this.gameServer.config && this.gameServer.config.serverPort == 3002) ? 10 : 19;
+        if (cell.mass < minMass) {
             return false;
         }
         // In all modes (including self feed), ejected mass must fly outward and not get re-absorbed inside the emitting cell before moving!
