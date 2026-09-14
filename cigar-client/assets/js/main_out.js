@@ -943,6 +943,7 @@
     }
     function onWsClose() {
         if (playerCells.length === 0) {
+            delay = 500; // Reset so next "Start Game" connects immediately
             showOverlays(1);
         }
         setTimeout(showConnecting, delay);
@@ -1886,9 +1887,11 @@
         wHandle.firstSpecFrame = 0;
         userNickName = arg;
         userScore = 0;
+        delay = 500; // Reset reconnect delay so start game is always instant
 
         if (!wsIsOpen()) {
             connecting = 1;
+            if (!CONNECTION_URL) CONNECTION_URL = location.host;
             showConnecting();
         } else {
             sendNickName();
