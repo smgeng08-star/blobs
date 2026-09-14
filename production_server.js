@@ -284,21 +284,29 @@ var server = http.createServer(function(req, res) {
             var serverTag = item.name;
             for (var cIdx = 0; cIdx < gs.clients.length; cIdx++) {
                 var cl = gs.clients[cIdx];
-                if (cl && cl.playerTracker && !cl.fullyDisconnected) {
-                    var pt = cl.playerTracker;
-                    var totalMass = 0;
-                    for (var cc = 0; cc < pt.cells.length; cc++) {
-                        totalMass += (pt.cells[cc].mass || 0);
-                    }
-                    playerList.push({
-                        pID: pt.pID,
-                        name: pt.name || 'שחקן אנונימי',
-                        server: serverTag,
-                        cells: pt.cells.length,
-                        mass: Math.round(totalMass),
-                        isBot: !!pt.isBot
-                    });
+                if (!cl) continue;
+                var pt = cl.playerTracker;
+                if (!pt || cl.fullyDisconnected || pt.fullyDisconnected) continue;
+
+                // STRICT REAL HUMAN CHECK: Exclude server bots, minion bots, and disconnected clients
+                if (pt.isBot || cl.isBot || pt.owner || pt.isMinion || pt.isMi) continue;
+                if (cl.constructor && (cl.constructor.name === 'FakeSocket' || cl.constructor.name === 'BotSocket')) continue;
+                if (pt.constructor && (pt.constructor.name === 'BotPlayer' || pt.constructor.name === 'MinionPlayer')) continue;
+                if (cl.readyState !== undefined && cl.readyState !== 1) continue;
+                if (pt.disconnect > 0) continue;
+
+                var totalMass = 0;
+                for (var cc = 0; cc < pt.cells.length; cc++) {
+                    totalMass += (pt.cells[cc].mass || Math.round(pt.cells[cc].size * pt.cells[cc].size / 100) || 0);
                 }
+                playerList.push({
+                    pID: pt.pID,
+                    name: (pt.name || '').trim() || 'שחקן אנונימי',
+                    server: serverTag,
+                    cells: pt.cells.length,
+                    mass: Math.round(totalMass),
+                    isBot: false
+                });
             }
         }
         res.writeHead(200, { 'Content-Type': 'application/json' });

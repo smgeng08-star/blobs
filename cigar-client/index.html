@@ -51,11 +51,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link href="assets/css/bootstrap.min.css?v=20260915_fix14" rel="stylesheet">
-    <link href="assets/css/index.css?v=20260915_fix14" rel="stylesheet">
+    <link href="assets/css/bootstrap.min.css?v=20260915_fix15" rel="stylesheet">
+    <link href="assets/css/index.css?v=20260915_fix15" rel="stylesheet">
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/vector.js?v=20260915_fix14"></script>
-    <script src="assets/js/main_out.js?v=20260915_fix14"></script>
+    <script src="assets/js/vector.js?v=20260915_fix15"></script>
+    <script src="assets/js/main_out.js?v=20260915_fix15"></script>
     <script>
         // Instant synchronous auth execution before render
         function quickAuthInit() {
@@ -544,7 +544,7 @@
         <!-- Section 3: שחקנים מחוברים והענקת מסה (Give Mass to Players) -->
         <div style="margin-bottom:14px; background:#131d2e; border:1px solid #1e3a5f; border-radius:10px; padding:10px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <div style="font-size:13px; font-weight:800; color:#38bdf8;">👥 שחקנים פעילים בשרת (הענקת מסה ובוטים)</div>
+                <div style="font-size:13px; font-weight:800; color:#38bdf8;">👥 שחקנים אמיתיים מחוברים (הענקת מסה ובוטים)</div>
                 <button type="button" onclick="refreshAdminPlayersList()" style="background:#1e293b; border:1px solid #475569; color:#94a3b8; border-radius:4px; padding:2px 8px; font-size:11px; cursor:pointer;">רענן</button>
             </div>
             <!-- Live Search Bar -->
@@ -640,12 +640,15 @@
         function renderAdminPlayers(players) {
             var container = $('#admin-players-list');
             container.empty();
-            if (!players || players.length === 0) {
-                container.html('<div style="text-align:center; font-size:11.5px; color:#94a3b8; padding:6px;">לא נמצאו שחקנים</div>');
+            var realPlayers = (players || []).filter(function(p) {
+                return p && !p.isBot;
+            });
+            if (realPlayers.length === 0) {
+                container.html('<div style="text-align:center; font-size:12px; color:#94a3b8; padding:8px;">אין שחקנים אמיתיים מחוברים כרגע</div>');
                 return;
             }
             var myUser = (localStorage.getItem('blobz_logged_user') || '').trim().toLowerCase();
-            players.forEach(function(p) {
+            realPlayers.forEach(function(p) {
                 var isMe = p.name && p.name.trim().toLowerCase() === myUser;
                 var row = $('<div style="display:flex; flex-direction:column; gap:6px; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:8px 10px; font-size:12px;"></div>');
                 var topRow = $('<div style="display:flex; justify-content:space-between; align-items:center;"></div>');
