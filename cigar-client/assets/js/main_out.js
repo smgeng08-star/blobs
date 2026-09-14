@@ -628,6 +628,9 @@
                     }
                     break;
                 case 27: // ESC key
+                    // Save nick + alive-connection flag before showOverlays wipes them
+                    wHandle._escPausedNick = userNickName;
+                    wHandle._escPausedWsAlive = wsIsOpen();
                     showOverlays(1);
                     wHandle.isSpectating = 0;
                     break;
@@ -1887,13 +1890,29 @@
         wHandle.firstSpecFrame = 0;
         userNickName = arg;
         userScore = 0;
-        delay = 500; // Reset reconnect delay so start game is always instant
+        delay = 500;
 
-        // Always force a fresh connection — kills stale ws so server gets
-        // a clean handshake + spawn packet every single time
-        if (!CONNECTION_URL) CONNECTION_URL = location.host;
-        connecting = 1;
-        showConnecting();
+        var wasEscPause = wHandle._escPausedWsAlive && wsIsOpen();
+        // Clear the ESC pause flags regardless
+        wHandle._escPausedNick = null;
+        wHandle._escPausedWsAlive = false;
+
+        if (wasEscPause) {
+            // Player hit ESC mid-game — ws still alive, just re-send nick to respawn
+            // WITHOUT killing the connection (preserves server-side session)
+            sendNickName();
+            setTimeout(function() {
+                if (!hasOverlay && playerCells.length === 0 && wsIsOpen()) sendNickName();
+            }, 200);
+            setTimeout(function() {
+                if (!hasOverlay && playerCells.length === 0 && wsIsOpen()) sendNickName();
+            }, 500);
+        } else {
+            // Fresh start / after death / after page load — force clean reconnect
+            if (!CONNECTION_URL) CONNECTION_URL = location.host;
+            connecting = 1;
+            showConnecting();
+        }
 
         if (typeof wHandle.playGameSound === 'function') {
             wHandle.playGameSound('start');
