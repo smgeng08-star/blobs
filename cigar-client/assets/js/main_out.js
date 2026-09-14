@@ -868,7 +868,6 @@
         hasOverlay = 1;
         nodesOnScreen = [];
         playerCells = [];
-        userNickName = null;
         if (arg) {
             wjQuery("#overlays").fadeIn(250);
         } else {
@@ -943,7 +942,7 @@
         wsSend(msg);
         if (wHandle.isSpectating) {
             sendUint8(1);
-        } else if (userNickName) {
+        } else if (!hasOverlay && userNickName) {
             sendNickName();
             setTimeout(function() {
                 if (!hasOverlay && !wHandle.isSpectating && playerCells.length === 0 && wsIsOpen()) {
@@ -1897,22 +1896,32 @@
         wHandle.isSpectating = 0;
         wHandle.isFreeRoam = 0;
         wHandle.firstSpecFrame = 0;
-        userNickName = arg;
+        userNickName = (arg || "").trim() || "Blobz";
         delay = 500;
 
-        var wasEscPause = wHandle._escPausedWsAlive && wsIsOpen();
-        // Clear the ESC pause flags regardless
         wHandle._escPausedNick = null;
         wHandle._escPausedWsAlive = false;
 
-        if (wasEscPause) {
-            // ESC mid-game — ws alive, player still exists server-side (state=0)
-            // Server won't re-spawn (FFA.js line 75 blocks it when state=0)
-            // So just hide overlay and let the game continue — mass preserved!
-            // sendNickName() just updates the displayed name, no respawn
+        if (wsIsOpen()) {
+            // Socket is already open and ready: send nickname immediately!
             sendNickName();
+            setTimeout(function() {
+                if (!hasOverlay && !wHandle.isSpectating && playerCells.length === 0 && wsIsOpen()) {
+                    sendNickName();
+                }
+            }, 120);
+            setTimeout(function() {
+                if (!hasOverlay && !wHandle.isSpectating && playerCells.length === 0 && wsIsOpen()) {
+                    sendNickName();
+                }
+            }, 300);
+            setTimeout(function() {
+                if (!hasOverlay && !wHandle.isSpectating && playerCells.length === 0 && wsIsOpen()) {
+                    sendNickName();
+                }
+            }, 600);
         } else {
-            // Fresh start / after death / after page load — force clean reconnect
+            // Socket not connected: connect now, onWsOpen will auto-send nickname
             userScore = 0;
             if (!CONNECTION_URL) CONNECTION_URL = location.host;
             connecting = 1;
