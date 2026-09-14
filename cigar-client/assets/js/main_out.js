@@ -1889,28 +1889,11 @@
         userScore = 0;
         delay = 500; // Reset reconnect delay so start game is always instant
 
-        if (!wsIsOpen()) {
-            connecting = 1;
-            if (!CONNECTION_URL) CONNECTION_URL = location.host;
-            showConnecting();
-        } else {
-            sendNickName();
-            setTimeout(function() {
-                if (!hasOverlay && !wHandle.isSpectating && playerCells.length === 0 && wsIsOpen()) {
-                    sendNickName();
-                }
-            }, 150);
-            setTimeout(function() {
-                if (!hasOverlay && !wHandle.isSpectating && playerCells.length === 0 && wsIsOpen()) {
-                    sendNickName();
-                }
-            }, 350);
-            setTimeout(function() {
-                if (!hasOverlay && !wHandle.isSpectating && playerCells.length === 0) {
-                    showOverlays(1);
-                }
-            }, 1500);
-        }
+        // Always force a fresh connection — kills stale ws so server gets
+        // a clean handshake + spawn packet every single time
+        if (!CONNECTION_URL) CONNECTION_URL = location.host;
+        connecting = 1;
+        showConnecting();
 
         if (typeof wHandle.playGameSound === 'function') {
             wHandle.playGameSound('start');
