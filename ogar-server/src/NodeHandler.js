@@ -298,9 +298,11 @@ NodeHandler.prototype.shootVirus = function(parent) {
         this.gameServer
     );
 
+    // moveEngineTick does position.sub(moveEngine), so -sin and -cos propel the virus FORWARD
+    var shootSpeed = 120;
     newVirus.moveEngine = new Vector(
-        Math.sin(parent.shootAngle) * 115,
-        Math.cos(parent.shootAngle) * 115
+        -Math.sin(parent.shootAngle) * shootSpeed,
+        -Math.cos(parent.shootAngle) * shootSpeed
     );
 
     // Add to moving node list

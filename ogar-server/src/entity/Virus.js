@@ -98,12 +98,16 @@ Virus.prototype.feed = function(node) {
     // On feed checks
     this.fed++;
     this.mass += node.mass;
-    // Set shooting angle in direction of incoming mass
+
+    // Save the travel direction of the incoming mass (moving from player into virus, continuing forward)
     if (node.moveEngine && node.moveEngine.distanceSq() > 1) {
-        this.shootAngle = node.moveEngine.angle();
+        this.shootAngle = Math.atan2(-node.moveEngine.x, -node.moveEngine.y);
     } else {
-        this.shootAngle = node.position.angleTo(this.position);
+        var dx = this.position.x - node.position.x;
+        var dy = this.position.y - node.position.y;
+        this.shootAngle = Math.atan2(dx, dy);
     }
+
     if (this.fed >= this.gameServer.config.virusFeedAmount) {
         // Shoot!
         this.mass = this.gameServer.config.virusStartMass;
