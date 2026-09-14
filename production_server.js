@@ -26,7 +26,9 @@ var MIME_TYPES = {
     '.cur': 'image/x-win-bitmap',
     '.woff': 'font/woff',
     '.woff2': 'font/woff2',
-    '.ttf': 'font/ttf'
+    '.ttf': 'font/ttf',
+    '.xml': 'application/xml; charset=utf-8',
+    '.txt': 'text/plain; charset=utf-8'
 };
 
 var SKINS_DIR = path.join(CLIENT_DIR, 'skins', 'users');
