@@ -416,24 +416,11 @@ NodeHandler.prototype.ejectMass = function(client) {
         var targetX = client.mouse.x;
         var targetY = client.mouse.y;
 
-        // If minion is ejecting (R key), target owner's nearest cell or center position
-        if (client.isMinion && client.owner && client.owner.cells && client.owner.cells.length > 0) {
-            var nearestOwnerCell = null;
-            var nearestDist = Infinity;
-            for (var oc = 0; oc < client.owner.cells.length; oc++) {
-                var oCell = client.owner.cells[oc];
-                if (oCell && !oCell.eaten) {
-                    var distSq = (oCell.position.x - cell.position.x) * (oCell.position.x - cell.position.x) +
-                                 (oCell.position.y - cell.position.y) * (oCell.position.y - cell.position.y);
-                    if (distSq < nearestDist) {
-                        nearestDist = distSq;
-                        nearestOwnerCell = oCell;
-                    }
-                }
-            }
-            if (nearestOwnerCell) {
-                targetX = nearestOwnerCell.position.x;
-                targetY = nearestOwnerCell.position.y;
+        // If minion is ejecting (R key), use owner's mouse position so mass goes where owner is aiming
+        if (client.isMinion && client.owner) {
+            if (client.owner.mouse) {
+                targetX = client.owner.mouse.x;
+                targetY = client.owner.mouse.y;
             } else if (client.owner.centerPos) {
                 targetX = client.owner.centerPos.x;
                 targetY = client.owner.centerPos.y;
@@ -451,7 +438,7 @@ NodeHandler.prototype.ejectMass = function(client) {
 
         // OgarII Settings.js: ejectDispersion=0.3, ejectedCellBoost=780
         // OgarII World.js boostCell: velocity = boost.d/9, so initial v = 780/9 = 86.666...
-        var dispersion = client.isMinion ? 0.05 : 0.3;
+        var dispersion = 0.3;
         var a = Math.atan2(dx, dy) - dispersion + (Math.random() * 2 * dispersion);
         var boostSpeed = 780 / 9; // OgarII ejectedCellBoost / 9
 
