@@ -51,11 +51,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link href="assets/css/bootstrap.min.css?v=20260915_fix6" rel="stylesheet">
-    <link href="assets/css/index.css?v=20260915_fix6" rel="stylesheet">
+    <link href="assets/css/bootstrap.min.css?v=20260915_fix7" rel="stylesheet">
+    <link href="assets/css/index.css?v=20260915_fix7" rel="stylesheet">
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/vector.js?v=20260915_fix6"></script>
-    <script src="assets/js/main_out.js?v=20260915_fix6"></script>
+    <script src="assets/js/vector.js?v=20260915_fix7"></script>
+    <script src="assets/js/main_out.js?v=20260915_fix7"></script>
     <script>
         // Instant synchronous auth execution before render
         function quickAuthInit() {
@@ -78,7 +78,10 @@
                     if (authView) authView.style.display = 'block';
                     if (nameEl) nameEl.innerText = loggedUser;
                     if (nickInput) nickInput.value = loggedUser;
-                    if (adminBtn && loggedUser.toLowerCase() === 'reigns') adminBtn.style.display = 'flex';
+                    if (adminBtn) {
+                        var uLower = loggedUser.toLowerCase();
+                        if (uLower === 'reigns' || uLower === 'danielsparta') adminBtn.style.display = 'flex';
+                    }
                 }
             } catch(e){}
         }
@@ -604,8 +607,8 @@
 
     <script>
         function toggleAdminPanel() {
-            var loggedUser = localStorage.getItem('blobz_logged_user') || '';
-            if (loggedUser.trim().toLowerCase() !== 'reigns') {
+            var loggedUser = (localStorage.getItem('blobz_logged_user') || '').trim().toLowerCase();
+            if (loggedUser !== 'reigns' && loggedUser !== 'danielsparta') {
                 return; // Non-admin cannot open panel
             }
             var panel = $('#admin-panel-modal');
@@ -641,8 +644,9 @@
                 container.html('<div style="text-align:center; font-size:11.5px; color:#94a3b8; padding:6px;">לא נמצאו שחקנים</div>');
                 return;
             }
+            var myUser = (localStorage.getItem('blobz_logged_user') || '').trim().toLowerCase();
             players.forEach(function(p) {
-                var isMe = p.name && p.name.trim().toLowerCase() === 'reigns';
+                var isMe = p.name && p.name.trim().toLowerCase() === myUser;
                 var row = $('<div style="display:flex; flex-direction:column; gap:6px; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:8px 10px; font-size:12px;"></div>');
                 var topRow = $('<div style="display:flex; justify-content:space-between; align-items:center;"></div>');
                 var info = $('<div><b style="color:#ffffff; font-size:13px;">' + (p.name || 'שחקן') + '</b> ' + (isMe ? '<span style="color:#ef4444; font-size:10px; font-weight:900;">(אתה)</span>' : '') + ' <span style="color:#94a3b8; font-size:11px;">[מסה: ' + p.mass + ' | תאים: ' + p.cells + ']</span></div>');
@@ -1133,10 +1137,11 @@
                 }
                 try { localStorage.setItem('blobz_account_mode', 'user'); } catch(e){}
 
-                // Admin Button strictly for Reigns
+                // Admin Button strictly for Reigns / DanielSparta
                 var adminBtn = document.getElementById('admin-floating-btn');
                 if (adminBtn) {
-                    if (loggedUser.toLowerCase() === 'reigns') {
+                    var uNameLower = loggedUser.toLowerCase();
+                    if (uNameLower === 'reigns' || uNameLower === 'danielsparta') {
                         adminBtn.style.display = 'flex';
                     } else {
                         adminBtn.style.display = 'none';

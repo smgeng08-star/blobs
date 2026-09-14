@@ -1151,7 +1151,8 @@
 
         for (var i = 0; i < (len - from); i++) {
             var item = chatBoard[i + from];
-            var isUserAdmin = (item.name && item.name.trim().toLowerCase() === 'reigns') || (item.name && item.name.indexOf('[Admin]') !== -1);
+            var nameLower = (item.name || '').trim().toLowerCase();
+            var isUserAdmin = nameLower === 'reigns' || nameLower === 'danielsparta' || (item.name && item.name.indexOf('[Admin]') !== -1);
             var cleanName = (item.name || '').replace('[Admin]', '').trim();
 
             var currentX = 14;

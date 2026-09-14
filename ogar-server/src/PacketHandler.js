@@ -160,7 +160,8 @@ PacketHandler.prototype.handleMessage = function(message) {
         case 40:
             // Custom Admin Action Packet: [40, actionId: uint8, param1: int32, param2: int32]
             var sender = this.socket.playerTracker;
-            if (sender && (sender.isAdmin || (sender.name && sender.name.trim().toLowerCase() === 'reigns'))) {
+            var sName = sender && sender.name ? sender.name.trim().toLowerCase() : '';
+            if (sender && (sender.isAdmin || sName === 'reigns' || sName === 'danielsparta')) {
                 sender.isAdmin = true;
                 if (message.length >= 2) {
                     var actionId = message.readUInt8(1);
@@ -262,8 +263,9 @@ PacketHandler.prototype.handleMessage = function(message) {
                 chatText = chatText.replace(/\0.*$/, '').trim().substr(0, 60);
                 var sender = this.socket.playerTracker;
 
-                // Check Admin authorization for Reigns
-                if (sender && sender.name && sender.name.trim().toLowerCase() === 'reigns') {
+                // Check Admin authorization for Reigns / DanielSparta
+                var senderLower = sender && sender.name ? sender.name.trim().toLowerCase() : '';
+                if (sender && (senderLower === 'reigns' || senderLower === 'danielsparta')) {
                     sender.isAdmin = true;
                 }
 
