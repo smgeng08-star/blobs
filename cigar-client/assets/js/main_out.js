@@ -627,11 +627,13 @@
                         }
                     }
                     break;
-                case 27: // ESC key
-                    // Save nick + alive-connection flag before showOverlays wipes them
+                case 27: // ESC key — soft pause, show menu WITHOUT killing server state
+                    // Don't call showOverlays() — it would wipe userNickName & playerCells
+                    // Instead, just show the overlay visually and flag the pause
                     wHandle._escPausedNick = userNickName;
                     wHandle._escPausedWsAlive = wsIsOpen();
-                    showOverlays(1);
+                    hasOverlay = 1;
+                    wjQuery("#overlays").fadeIn(250);
                     wHandle.isSpectating = 0;
                     break;
             }
@@ -1889,7 +1891,6 @@
         wHandle.isFreeRoam = 0;
         wHandle.firstSpecFrame = 0;
         userNickName = arg;
-        userScore = 0;
         delay = 500;
 
         var wasEscPause = wHandle._escPausedWsAlive && wsIsOpen();
@@ -1898,17 +1899,14 @@
         wHandle._escPausedWsAlive = false;
 
         if (wasEscPause) {
-            // Player hit ESC mid-game — ws still alive, just re-send nick to respawn
-            // WITHOUT killing the connection (preserves server-side session)
+            // ESC mid-game — ws alive, player still exists server-side (state=0)
+            // Server won't re-spawn (FFA.js line 75 blocks it when state=0)
+            // So just hide overlay and let the game continue — mass preserved!
+            // sendNickName() just updates the displayed name, no respawn
             sendNickName();
-            setTimeout(function() {
-                if (!hasOverlay && playerCells.length === 0 && wsIsOpen()) sendNickName();
-            }, 200);
-            setTimeout(function() {
-                if (!hasOverlay && playerCells.length === 0 && wsIsOpen()) sendNickName();
-            }, 500);
         } else {
             // Fresh start / after death / after page load — force clean reconnect
+            userScore = 0;
             if (!CONNECTION_URL) CONNECTION_URL = location.host;
             connecting = 1;
             showConnecting();
