@@ -99,9 +99,9 @@ Virus.prototype.feed = function(node) {
     this.fed++;
     this.mass += node.mass;
 
-    // Save the travel direction of the incoming mass (moving from player into virus, continuing forward)
+    // 1:1 OgarII: splitAngle = Math.atan2(cell.boost.dx, cell.boost.dy)
     if (node.moveEngine && node.moveEngine.distanceSq() > 1) {
-        this.shootAngle = Math.atan2(-node.moveEngine.x, -node.moveEngine.y);
+        this.shootAngle = Math.atan2(node.moveEngine.x, node.moveEngine.y);
     } else {
         var dx = this.position.x - node.position.x;
         var dy = this.position.y - node.position.y;
@@ -114,6 +114,23 @@ Virus.prototype.feed = function(node) {
         this.fed = 0;
 
         this.gameServer.nodeHandler.shootVirus(this);
+    }
+};
+
+// 1:1 OgarII virus boost displacement and friction
+Virus.prototype.moveEngineTick = function() {
+    if (!this.gameServer || !this.moveEngine) return;
+
+    this.position.add(this.moveEngine);
+    this.moveEngine.scale(8 / 9);
+
+    if (this.moveEngine.distanceSq() < 1) {
+        this.moveEngine.set(0, 0);
+    }
+
+    this.borderCheck(true);
+    if (this.gameServer.quadTree) {
+        this.gameServer.quadTree.update(this);
     }
 };
 

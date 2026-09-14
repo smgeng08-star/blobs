@@ -298,11 +298,11 @@ NodeHandler.prototype.shootVirus = function(parent) {
         this.gameServer
     );
 
-    // moveEngineTick does position.sub(moveEngine), so -sin and -cos propel the virus FORWARD
-    var shootSpeed = 120;
+    // 1:1 OgarII: newVirus.boost.dx = Math.sin(virus.splitAngle); newVirus.boost.dy = Math.cos(virus.splitAngle);
+    var boostSpeed = 86.66; // 780 / 9 OgarII split boost
     newVirus.moveEngine = new Vector(
-        -Math.sin(parent.shootAngle) * shootSpeed,
-        -Math.cos(parent.shootAngle) * shootSpeed
+        Math.sin(parent.shootAngle) * boostSpeed,
+        Math.cos(parent.shootAngle) * boostSpeed
     );
 
     // Add to moving node list
