@@ -1423,6 +1423,21 @@
         var a, oldtime = Date.now();
         ++cb;
         timestamp = oldtime;
+
+        // Automatically clean up dead/eaten cells so playerCells is always 100% accurate
+        if (playerCells.length > 0) {
+            var prevCount = playerCells.length;
+            playerCells = playerCells.filter(function(cell) {
+                return cell && !cell.destroyed && nodes[cell.id] === cell;
+            });
+            if (prevCount > 0 && playerCells.length === 0 && !hasOverlay && !wHandle.isSpectating) {
+                if (typeof wHandle.playGameSound === 'function') {
+                    wHandle.playGameSound('death');
+                }
+                showOverlays(0);
+            }
+        }
+
         if (0 < playerCells.length) {
             calcViewZoom();
             var c = a = 0;
