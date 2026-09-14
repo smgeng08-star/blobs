@@ -628,9 +628,7 @@ GameServer.prototype.restartGame = function() {
     // 2. Re-spawn starting world entities
     if (this.nodeHandler) {
         this.nodeHandler.addFood(this.config.foodStartAmount || 1000);
-    }
-    for (var v = 0; v < (this.config.virusMinAmount || 25); v++) {
-        this.spawnVirus();
+        this.nodeHandler.addViruses(this.config.virusMinAmount || 25);
     }
     if (this.gameMode && this.gameMode.onServerInit) {
         this.gameMode.onServerInit(this);
