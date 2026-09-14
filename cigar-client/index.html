@@ -426,8 +426,8 @@
 
                     <!-- Spawn & Remove Bot Buttons -->
                     <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
-                        <button type="button" id="btn-spawn-bots" onclick="handleSpawn25Bots()" style="width:100%; background:linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%); color:#ffffff; border:1px solid #0284c7; border-radius:8px; padding:11px 14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 3px 8px rgba(2,132,199,0.25); transition:all 0.15s ease;">
-                            הוסף בוטים (25)
+                        <button type="button" id="btn-spawn-bots" onclick="handleSpawn15Bots()" style="width:100%; background:linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%); color:#ffffff; border:1px solid #0284c7; border-radius:8px; padding:11px 14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 3px 8px rgba(2,132,199,0.25); transition:all 0.15s ease;">
+                            הוסף בוטים (15)
                         </button>
                         <button type="button" id="btn-remove-bots" onclick="handleRemoveBots()" style="width:100%; background:#ffffff; color:#ef4444; border:1.5px solid #fecaca; border-radius:8px; padding:9px 12px; font-size:13px; font-weight:800; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.03); transition:all 0.15s ease;">
                             הסר את כל הבוטים האישיים
@@ -1466,10 +1466,10 @@
 
         var botsSpawned = false;
 
-        function handleSpawn25Bots() {
+        function handleSpawn15Bots() {
             if (botsSpawned) return;
             if (typeof window.spawnBots === 'function') {
-                window.spawnBots(25);
+                window.spawnBots(15);
             }
             botsSpawned = true;
             var btn = document.getElementById('btn-spawn-bots');
@@ -1480,7 +1480,7 @@
                 btn.style.background = '#94a3b8';
                 btn.style.borderColor = '#94a3b8';
                 btn.style.boxShadow = 'none';
-                btn.innerText = 'הבוטים פעילים במשחק (25)';
+                btn.innerText = 'הבוטים פעילים במשחק (15)';
             }
         }
 
@@ -1497,7 +1497,7 @@
                 btn.style.background = 'linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%)';
                 btn.style.borderColor = '#0284c7';
                 btn.style.boxShadow = '0 3px 8px rgba(2,132,199,0.25)';
-                btn.innerText = 'הוסף בוטים (25)';
+                btn.innerText = 'הוסף בוטים (15)';
             }
         }
 
