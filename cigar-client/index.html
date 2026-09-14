@@ -51,11 +51,11 @@
             if (typeof updateAuthUI === 'function') updateAuthUI();
             $('#overlays').show();
 
-            var host1 = location.host; // Primary port (e.g. localhost:3000)
+            var host1 = location.host; // Primary port (e.g. localhost:3000 or blobz.co.il)
             var classicPort = '3001';
             var selfFeedPort = '3002';
-            var host2 = location.hostname + ':' + classicPort;
-            var host3 = location.hostname + ':' + selfFeedPort;
+            var host2 = (location.protocol === 'https:') ? (location.host + '/classic') : (location.hostname + ':' + classicPort);
+            var host3 = (location.protocol === 'https:') ? (location.host + '/selffeed') : (location.hostname + ':' + selfFeedPort);
 
             var $select = $('#gamemode');
             $select.empty();
@@ -937,10 +937,10 @@
             var currServerVal = $('#gamemode').val();
             var selector = '#gamemode option:nth-child(1)';
             var serverName = '[שרת] נסיוני אתגרי';
-            if (currServerVal && currServerVal.indexOf(':3001') !== -1) {
+            if (currServerVal && (currServerVal.indexOf(':3001') !== -1 || currServerVal.indexOf('/classic') !== -1)) {
                 selector = '#gamemode option:nth-child(2)';
                 serverName = '[שרת] קלאסי';
-            } else if (currServerVal && currServerVal.indexOf(':3002') !== -1) {
+            } else if (currServerVal && (currServerVal.indexOf(':3002') !== -1 || currServerVal.indexOf('/selffeed') !== -1)) {
                 selector = '#gamemode option:nth-child(3)';
                 serverName = '[שרת] סלף פיד מהיר';
             }

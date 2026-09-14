@@ -414,7 +414,7 @@
                 case 32: // SPACE key (Macro Split strictly on Self-Feed server :3002)
                     if (!isTyping && !hasOverlay) {
                         var currServer = (typeof CONNECTION_URL !== 'undefined' && CONNECTION_URL ? CONNECTION_URL : '') + ' ' + (typeof wsUrl !== 'undefined' && wsUrl ? wsUrl : '') + ' ' + (typeof gameMode !== 'undefined' && gameMode ? gameMode : '');
-                        var isSelfFeed = currServer.indexOf('3002') !== -1;
+                        var isSelfFeed = currServer.indexOf('3002') !== -1 || currServer.indexOf('selffeed') !== -1;
                         
                         if (isSelfFeed) {
                             sendMouseMove();
