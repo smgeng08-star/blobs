@@ -1558,9 +1558,9 @@
 
         // --- Authentic Blobz.co.il Minimap (Top Left Radar) ---
         (function drawBlobzMinimap() {
-            var mW = 105, mH = 105, mX = 14, mY = 14;
+            var mW = 110, mH = 110, mX = 14, mY = 14;
             ctx.save();
-            ctx.fillStyle = "rgba(22, 28, 38, 0.78)";
+            ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
             ctx.beginPath();
             var rad = 8;
             ctx.moveTo(mX + rad, mY);
@@ -1574,25 +1574,11 @@
             ctx.quadraticCurveTo(mX, mY, mX + rad, mY);
             ctx.closePath();
             ctx.fill();
-
-            // Grid lines (5x5 sectors)
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
             ctx.lineWidth = 1;
-            ctx.font = "8px Assistant, sans-serif";
-            ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            var cols = 5, rows = 5;
-            var cW = mW / cols, cH = mH / rows;
-            var letters = ["A", "B", "C", "D", "E"];
-            for (var r = 0; r < rows; r++) {
-                for (var c = 0; c < cols; c++) {
-                    ctx.strokeRect(mX + c * cW, mY + r * cH, cW, cH);
-                    ctx.fillText(letters[r] + (c + 1), mX + c * cW + cW / 2, mY + r * cH + cH / 2);
-                }
-            }
+            ctx.stroke();
 
-            // Player position dot
+            // Player position calculations
             var totalW = (maxX - minX) || 10000;
             var totalH = (maxY - minY) || 10000;
             var normX = Math.max(0, Math.min(1, (nodeX - minX) / totalW));
@@ -1600,14 +1586,70 @@
             var dotX = mX + normX * mW;
             var dotY = mY + normY * mH;
 
-            // Pulsing player dot
+            var cols = 5, rows = 5;
+            var cW = mW / cols, cH = mH / rows;
+            var curCol = Math.max(0, Math.min(cols - 1, Math.floor(normX * cols)));
+            var curRow = Math.max(0, Math.min(rows - 1, Math.floor(normY * rows)));
+            var letters = ["A", "B", "C", "D", "E"];
+            var currentSector = letters[curRow] + (curCol + 1);
+
+            // Highlight current sector box
+            ctx.fillStyle = "rgba(56, 189, 248, 0.18)";
+            ctx.fillRect(mX + curCol * cW, mY + curRow * cH, cW, cH);
+
+            // Grid lines (5x5 sectors)
+            ctx.lineWidth = 1;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            for (var r = 0; r < rows; r++) {
+                for (var c = 0; c < cols; c++) {
+                    ctx.strokeStyle = "rgba(255, 255, 255, 0.10)";
+                    ctx.strokeRect(mX + c * cW, mY + r * cH, cW, cH);
+                    if (r === curRow && c === curCol) {
+                        ctx.font = "bold 9px Assistant, sans-serif";
+                        ctx.fillStyle = "#38bdf8";
+                    } else {
+                        ctx.font = "8px Assistant, sans-serif";
+                        ctx.fillStyle = "rgba(255, 255, 255, 0.32)";
+                    }
+                    ctx.fillText(letters[r] + (c + 1), mX + c * cW + cW / 2, mY + r * cH + cH / 2);
+                }
+            }
+
+            // Pulsing player radar dot with expanding glow ring
+            var pulse = (Math.sin(Date.now() / 200) + 1) / 2; // 0 to 1
+            ctx.strokeStyle = "rgba(56, 189, 248, " + (0.55 - pulse * 0.4) + ")";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(dotX, dotY, 4 + pulse * 4, 0, Math.PI * 2);
+            ctx.stroke();
+
             ctx.fillStyle = "#38bdf8";
             ctx.beginPath();
-            ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
+            ctx.arc(dotX, dotY, 3.5, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = "#ffffff";
-            ctx.lineWidth = 1.5;
+            ctx.lineWidth = 1.2;
             ctx.stroke();
+
+            // Sector badge below minimap
+            var badgeW = 60, badgeH = 18;
+            var badgeX = mX + (mW - badgeW) / 2, badgeY = mY + mH + 6;
+            ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 6);
+            else ctx.rect(badgeX, badgeY, badgeW, badgeH);
+            ctx.fill();
+            ctx.strokeStyle = "rgba(56, 189, 248, 0.35)";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.font = "bold 10px Assistant, Rubik, sans-serif";
+            ctx.fillStyle = "#38bdf8";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("מיקום: " + currentSector, badgeX + badgeW / 2, badgeY + badgeH / 2 + 1);
+
             ctx.restore();
         })();
 

@@ -51,11 +51,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link href="assets/css/bootstrap.min.css?v=20260915_fix10" rel="stylesheet">
-    <link href="assets/css/index.css?v=20260915_fix10" rel="stylesheet">
+    <link href="assets/css/bootstrap.min.css?v=20260915_fix12" rel="stylesheet">
+    <link href="assets/css/index.css?v=20260915_fix12" rel="stylesheet">
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/vector.js?v=20260915_fix10"></script>
-    <script src="assets/js/main_out.js?v=20260915_fix10"></script>
+    <script src="assets/js/vector.js?v=20260915_fix12"></script>
+    <script src="assets/js/main_out.js?v=20260915_fix12"></script>
     <script>
         // Instant synchronous auth execution before render
         function quickAuthInit() {
@@ -1393,28 +1393,46 @@
             if (!file) return;
             var reader = new FileReader();
             reader.onload = function(evt) {
-                var dataUrl = evt.target.result;
-                var loggedUser = localStorage.getItem('blobz_logged_user');
-                
-                if (typeof window.setCustomSkin === 'function') {
-                    window.setCustomSkin(dataUrl);
-                }
+                var rawData = evt.target.result;
+                var tempImg = new Image();
+                tempImg.onload = function() {
+                    // Resize to a high-quality 256x256 canvas for buttery-smooth 60FPS performance
+                    var c = document.createElement('canvas');
+                    c.width = 256;
+                    c.height = 256;
+                    var ctx = c.getContext('2d');
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
 
-                // Save permanently per user account
-                if (loggedUser) {
-                    try {
-                        var accounts = JSON.parse(localStorage.getItem('blobz_accounts') || '{}');
-                        if (accounts[loggedUser]) {
-                            accounts[loggedUser].skin = dataUrl;
-                            localStorage.setItem('blobz_accounts', JSON.stringify(accounts));
-                        }
-                        localStorage.setItem('blobz_skin_' + loggedUser, dataUrl);
-                    } catch(err){}
-                    syncSkinToServer(loggedUser, dataUrl);
-                }
-                try { localStorage.setItem('blobz_custom_skin', dataUrl); } catch(e){}
+                    var minDim = Math.min(tempImg.width, tempImg.height);
+                    var sx = (tempImg.width - minDim) / 2;
+                    var sy = (tempImg.height - minDim) / 2;
+                    ctx.drawImage(tempImg, sx, sy, minDim, minDim, 0, 0, 256, 256);
 
-                updateAuthUI();
+                    var dataUrl = c.toDataURL('image/png');
+                    var loggedUser = localStorage.getItem('blobz_logged_user');
+                    
+                    if (typeof window.setCustomSkin === 'function') {
+                        window.setCustomSkin(dataUrl);
+                    }
+
+                    // Save permanently per user account
+                    if (loggedUser) {
+                        try {
+                            var accounts = JSON.parse(localStorage.getItem('blobz_accounts') || '{}');
+                            if (accounts[loggedUser]) {
+                                accounts[loggedUser].skin = dataUrl;
+                                localStorage.setItem('blobz_accounts', JSON.stringify(accounts));
+                            }
+                            localStorage.setItem('blobz_skin_' + loggedUser, dataUrl);
+                        } catch(err){}
+                        syncSkinToServer(loggedUser, dataUrl);
+                    }
+                    try { localStorage.setItem('blobz_custom_skin', dataUrl); } catch(e){}
+
+                    updateAuthUI();
+                };
+                tempImg.src = rawData;
             };
             reader.readAsDataURL(file);
         }

@@ -249,22 +249,12 @@ PlayerTracker.prototype.update = function() {
             ));
         }
 
-        if (this.spectate || this.cells.length == 0) {
-            this.socket.sendPacket(new Packet.SetBorder(
-                this.gameServer.config.borderLeft + this.scrambleX,
-                this.gameServer.config.borderRight + this.scrambleX,
-                this.gameServer.config.borderTop + this.scrambleY,
-                this.gameServer.config.borderBottom + this.scrambleY
-            ));
-        } else {
-            var box = this.getBox().getBounds();
-            this.socket.sendPacket(new Packet.SetBorder(
-                Math.min(box.left + this.scrambleX, this.gameServer.config.borderLeft + this.scrambleX),
-                Math.max(box.right + this.scrambleX, this.gameServer.config.borderRight + this.scrambleX),
-                Math.min(box.top + this.scrambleY, this.gameServer.config.borderTop + this.scrambleY),
-                Math.max(box.bottom + this.scrambleY, this.gameServer.config.borderBottom + this.scrambleY)
-            ));
-        }
+        this.socket.sendPacket(new Packet.SetBorder(
+            this.gameServer.config.borderLeft + this.scrambleX,
+            this.gameServer.config.borderRight + this.scrambleX,
+            this.gameServer.config.borderTop + this.scrambleY,
+            this.gameServer.config.borderBottom + this.scrambleY
+        ));
     }
 
     // Handles disconnections
