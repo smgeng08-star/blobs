@@ -20,6 +20,7 @@ PluginHandler.prototype.readOptions = function() {
         // File probably not available
         console.log("[Info] options.ini not found, creating one");
         fs.writeFileSync('./plugins/options.ini', "; Add the plugin names here.\n; Set the value to 0/1 to enable/disable the plugin.\n\n", 'utf-8');
+        this.options = {};
     }
 };
 

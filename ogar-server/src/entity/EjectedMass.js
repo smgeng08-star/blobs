@@ -19,6 +19,12 @@ EjectedMass.prototype.moveEngineTick = function() {
     this.ticksAlive++;
     if (!this.gameServer || !this.isMoving) return;
 
+    // Do not double-jump on creation tick so client receives the true perimeter start position
+    if (this.firstTick) {
+        this.firstTick = false;
+        return;
+    }
+
     // OgarII World.js boostCell(): d = boost.d/9, boost.d -= d → equivalent to scale(8/9)
     this.position.add(this.moveEngine);
     this.moveEngine.scale(8/9);

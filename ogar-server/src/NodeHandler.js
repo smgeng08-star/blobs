@@ -442,13 +442,10 @@ NodeHandler.prototype.ejectMass = function(client) {
         var a = Math.atan2(dx, dy) - dispersion + (Math.random() * 2 * dispersion);
         var boostSpeed = 780 / 9; // OgarII ejectedCellBoost / 9
 
-        // Spawn ejected mass so its edge starts at cell perimeter
-        // For large cells: barely noticeable difference. For small cells (minions): prevents mass from appearing far away
-        var ejectedSize = 38; // OgarII ejectedSize
-        var spawnDist = Math.max(size - ejectedSize, size * 0.5);
+        // OgarII World.js ejectFromPlayer: sx = cell.x + dx * (size - 10) to emerge smoothly from the cell edge with 0 gap
         var startPos = new Vector(
-            cell.position.x + (dx * spawnDist),
-            cell.position.y + (dy * spawnDist)
+            cell.position.x + (dx * (size - 10)),
+            cell.position.y + (dy * (size - 10))
         );
 
         // OgarII Settings.js: ejectingLoss=43, applied as squareSize -= 43*43 = 1849

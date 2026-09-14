@@ -52,12 +52,16 @@ function startServer() {
 }
 
 // Initialize the server console
-if (showConsole) {
+if (showConsole && process.stdin.isTTY) {
     setTimeout(function() {
-    var input = new AsyncConsole('> ',function(command) {
-        parseCommands(command);
-    })
-    },200)
+        try {
+            var input = new AsyncConsole('> ',function(command) {
+                parseCommands(command);
+            });
+        } catch (e) {
+            console.log("[Console] Non-interactive environment, console disabled");
+        }
+    }, 200);
 }
 
 // Console functions

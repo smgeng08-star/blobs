@@ -78,24 +78,24 @@ CollisionHandler.prototype.canEat = function(cell, check) {
     // First check eating distance
     var dist = cell.position.sqDistanceTo(check.position);
 
-    // Food cells (cellType 1) are consumed instantly at the cell border
+    // Food cells (cellType 1) are consumed on exact contact with cell border (no air gap)
     if (check.cellType == 1) {
-        var r = cell.getSize() + (check.getSize() || 10);
+        var r = cell.getSize();
         return dist <= r * r;
     }
 
-    // Ejected mass (cellType 3) is consumed at the cell border
+    // Ejected mass (cellType 3) is consumed only when it really enters into the cell body
     if (check.cellType == 3) {
-        // In authentic Agar.io / OgarII, cells cannot eat ejected mass below 19 mass (size < 43.33)
         var minMass = (this.gameServer && this.gameServer.config && this.gameServer.config.serverPort == 3002) ? 10 : 19;
         if (cell.mass < minMass) {
             return false;
         }
-        // In all modes (including self feed), ejected mass must fly outward and not get re-absorbed inside the emitting cell before moving!
         if (check.owner === cell.owner && check.sourceCellId === cell.nodeId && (check.firstTick || (check.ticksAlive && check.ticksAlive < 3))) {
             return false;
         }
-        var r = cell.getSize() + (check.getSize() || 12);
+        var massRadius = check.getSize() || 38;
+        var r = cell.getSize() - (massRadius * 0.25);
+        if (r < 0) r = cell.getSize();
         return dist <= r * r;
     }
 
@@ -167,16 +167,15 @@ CollisionHandler.prototype.canEat = function(cell, check) {
         return false; // Same team cells can't eat each other
     }
 
-    // Enemy Player cell / Bot: In authentic Agar.io / OgarII (worldEatMult = 1.140175425099138 => 1.30x mass)
-    var reqMultiplier = 1.30;
+    // Enemy Player cell / Bot: In authentic Agar.io (1.18x mass required)
+    var reqMultiplier = 1.18;
     if (cell.mass < check.mass * reqMultiplier) return false;
 
-    // Authentic Agar.io Eating Distance: Victim's center must be deeply engulfed (at least 1/3 inside consumer radius: r1 - r2 / 3)
-    // This matches OgarII: d <= a.size - b.size / worldEatOverlapDiv (where worldEatOverlapDiv = 3)
+    // Authentic Agar.io Eating Distance: Victim must be in real contact (r1 - r2 * 0.15)
+    // Perfectly compensates for client-side interpolation so the eat happens exactly on visual impact
     var r1 = cell.getSize();
     var r2 = check.getSize();
-    var maxEatDist = r1 - (r2 / 3);
+    var maxEatDist = r1 - (r2 * 0.15);
     if (maxEatDist <= 0) return false;
-
     return dist <= maxEatDist * maxEatDist;
 };

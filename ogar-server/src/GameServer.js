@@ -63,7 +63,7 @@ function GameServer() {
         serverBots: 0, // Amount of player bots to spawn
         serverViewBaseX: 1024, // Base view distance of players. Warning: high values may cause lag
         serverViewBaseY: 592,
-        serverStatsPort: 88, // Port for stats server. Having a negative number will disable the stats server.
+        serverStatsPort: -1, // Port for stats server. Having a negative number will disable the stats server.
         serverStatsUpdate: 60, // Amount of seconds per update for the server stats
         serverLogLevel: 1, // Logging level of the server. 0 = No logs, 1 = Logs the console, 2 = Logs console and ip connections
         serverTeamingAllowed: 1, // Toggles anti-teaming. 0 = Anti-team enabled, 1 = Anti-team disabled
@@ -536,8 +536,9 @@ GameServer.prototype.spawnPlayer = function(player, pos, mass) {
 
 GameServer.prototype.loadConfig = function() {
     try {
-        // Load the contents of the config file
-        var load = ini.parse(fs.readFileSync('./gameserver.ini', 'utf-8'));
+        var iniPath = fs.existsSync('./gameserver.ini') ? './gameserver.ini' : (fs.existsSync('./src/gameserver.ini') ? './src/gameserver.ini' : null);
+        if (!iniPath) throw new Error("No gameserver.ini found");
+        var load = ini.parse(fs.readFileSync(iniPath, 'utf-8'));
 
         // Replace all the default config's values with the loaded config's values
         for (var obj in load) {
@@ -555,8 +556,9 @@ GameServer.prototype.loadConfig = function() {
 // Stats server
 
 GameServer.prototype.startStatsServer = function(port) {
-    // Do not start the server if the port is negative
-    if (port < 1) {
+    var p = parseInt(port);
+    // Do not start the server if the port is negative or not set
+    if (isNaN(p) || p < 1) {
         return;
     }
 
