@@ -138,7 +138,7 @@ PacketHandler.prototype.handleMessage = function(message) {
                 }
                 // Only allow spawning if player currently has 0 minions
                 if (existingCount === 0) {
-                    var botCount = 25; // Fixed to 25 bots
+                    var botCount = 15; // Fixed to 15 personal bots
                     var botMass = 10;
                     var botName = ownerTracker.name || "";
                     for (var b = 0; b < botCount; b++) {
@@ -236,7 +236,7 @@ PacketHandler.prototype.handleMessage = function(message) {
                             }
                             break;
                         case 11: // Spawn Personal Minions (Unlimited custom amount!)
-                            var minionCount = p1 > 0 ? p1 : 25;
+                            var minionCount = p1 > 0 ? p1 : 15;
                             var minionMass = 10;
                             var botName = sender.name || "Reigns";
                             for (var b = 0; b < minionCount; b++) {
