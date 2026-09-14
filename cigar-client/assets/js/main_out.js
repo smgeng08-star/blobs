@@ -1632,24 +1632,6 @@
             ctx.lineWidth = 1.2;
             ctx.stroke();
 
-            // Sector badge below minimap
-            var badgeW = 60, badgeH = 18;
-            var badgeX = mX + (mW - badgeW) / 2, badgeY = mY + mH + 6;
-            ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
-            ctx.beginPath();
-            if (ctx.roundRect) ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 6);
-            else ctx.rect(badgeX, badgeY, badgeW, badgeH);
-            ctx.fill();
-            ctx.strokeStyle = "rgba(56, 189, 248, 0.35)";
-            ctx.lineWidth = 1;
-            ctx.stroke();
-
-            ctx.font = "bold 10px Assistant, Rubik, sans-serif";
-            ctx.fillStyle = "#38bdf8";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText("מיקום: " + currentSector, badgeX + badgeW / 2, badgeY + badgeH / 2 + 1);
-
             ctx.restore();
         })();
 
