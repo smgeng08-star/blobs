@@ -449,22 +449,24 @@ NodeHandler.prototype.ejectMass = function(client) {
             dx /= d; dy /= d;
         }
 
-        // 1:1 OgarII dispersion angle and boost speed (780 / 9 = 86.66)
-        var dispersion = client.isMinion ? 0.05 : 0.08;
+        // OgarII Settings.js: ejectDispersion=0.3, ejectedCellBoost=780
+        // OgarII World.js boostCell: velocity = boost.d/9, so initial v = 780/9 = 86.666...
+        var dispersion = client.isMinion ? 0.05 : 0.3;
         var a = Math.atan2(dx, dy) - dispersion + (Math.random() * 2 * dispersion);
-        var boostSpeed = 48;
+        var boostSpeed = 780 / 9; // OgarII ejectedCellBoost / 9
 
-        // 1:1 OgarII start position right at cell perimeter
+        // OgarII World.js ejectFromPlayer: sx = cell.x + dx * cell.size (at cell perimeter)
         var startPos = new Vector(
-            cell.position.x + (dx * (size + 10)),
-            cell.position.y + (dy * (size + 10))
+            cell.position.x + (dx * size),
+            cell.position.y + (dy * size)
         );
 
-        // Remove mass from parent cell (1:1 OgarII ejectingLoss: 43 -> 43*43/100 ≈ 18.49)
+        // OgarII Settings.js: ejectingLoss=43, applied as squareSize -= 43*43 = 1849
+        // In mass terms: 1849/100 ≈ 18.49 → ejectMassLoss=18
         var massLoss = isClassicOrExp ? (this.gameServer.config.ejectMassLoss || 18) : (this.gameServer.config.ejectMassLoss || 0);
         cell.mass -= massLoss;
 
-        // Create cell
+        // Create cell - OgarII Settings.js: ejectedSize=38, mass = 38*38/100 ≈ 14.44
         var ejected = new Entity.EjectedMass(
             this.gameServer.getNextNodeId(),
             client,
