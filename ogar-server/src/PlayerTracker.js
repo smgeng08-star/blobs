@@ -81,19 +81,23 @@ PlayerTracker.prototype.getScore = function(reCalcScore) {
     if (reCalcScore) {
         var s = 0;
         for (var i = 0; i < this.cells.length; i++) {
-            if (!this.cells[i]) return; // Error
-            s += this.cells[i].mass;
-            this.score = s;
+            var cell = this.cells[i];
+            if (cell && !cell.destroyed) {
+                s += (cell.mass || Math.round(cell.size * cell.size / 100) || 0);
+            }
         }
+        this.score = s;
     }
-    return this.score >> 0;
+    return (this.score >> 0) || 0;
 };
 
 PlayerTracker.prototype.getSizes = function() {
     var s = 0;
     for (var i = 0; i < this.cells.length; i++) {
-        if (!this.cells[i]) return; // Error
-        s += this.cells[i].getSize();
+        var cell = this.cells[i];
+        if (cell && !cell.destroyed) {
+            s += cell.getSize();
+        }
     }
     return s;
 };
@@ -234,8 +238,8 @@ PlayerTracker.prototype.update = function() {
     this.nodeDestroyQueue = []; // Reset destroy queue
     this.nodeAdditionQueue = []; // Reset addition queue
 
-    // Update leaderboard & live server player count (only every 5 ticks)
-    if (this.gameServer.tickLB == 5) {
+    // Update leaderboard & live server player count (sent immediately when recalculated)
+    if (this.gameServer.tickLB == 0) {
         this.socket.sendPacket(new Packet.UpdateLeaderboard(
             this.gameServer.leaderboard,
             this.gameServer.gameMode.packetLB,

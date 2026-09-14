@@ -460,19 +460,19 @@ GameServer.prototype.update = function() {
 
     var hr1s = process.hrtime();
     if (this.run) this.nodeHandler.update();
-    var hr1e = process.hrtime(hr1s),
-
-        hr2s = process.hrtime();
-    this.playerHandler.update();
-    var hr2e = process.hrtime(hr2s),
-
-        hr3s = process.hrtime();
-    this.gameMode.onTick(this);
-    var hr3e = process.hrtime(hr3s);
+    var hr1e = process.hrtime(hr1s);
 
     var hr4s = process.hrtime();
-    if (this.run && this.tickLB == 5) this.updateLeaderboard();
+    if (this.run && this.tickLB >= 3) this.updateLeaderboard();
     var hr4e = process.hrtime(hr4s);
+
+    var hr2s = process.hrtime();
+    this.playerHandler.update();
+    var hr2e = process.hrtime(hr2s);
+
+    var hr3s = process.hrtime();
+    this.gameMode.onTick(this);
+    var hr3e = process.hrtime(hr3s);
 
     this.lastUpdate += 40;
     this.updateLog['loop-cl-update'] = getTime(hr1e);

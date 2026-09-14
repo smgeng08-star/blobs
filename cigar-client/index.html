@@ -51,11 +51,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link href="assets/css/bootstrap.min.css?v=20260915_fix13" rel="stylesheet">
-    <link href="assets/css/index.css?v=20260915_fix13" rel="stylesheet">
+    <link href="assets/css/bootstrap.min.css?v=20260915_fix14" rel="stylesheet">
+    <link href="assets/css/index.css?v=20260915_fix14" rel="stylesheet">
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/vector.js?v=20260915_fix13"></script>
-    <script src="assets/js/main_out.js?v=20260915_fix13"></script>
+    <script src="assets/js/vector.js?v=20260915_fix14"></script>
+    <script src="assets/js/main_out.js?v=20260915_fix14"></script>
     <script>
         // Instant synchronous auth execution before render
         function quickAuthInit() {
@@ -867,6 +867,7 @@
             $('#tab-pane-' + tabKey).show().addClass('active');
 
             if (tabKey === 'lb') {
+                fetchGlobalScores();
                 updateLeaderboardModalTab();
             }
         }
@@ -887,7 +888,7 @@
             });
         }
         fetchGlobalScores();
-        setInterval(fetchGlobalScores, 6000);
+        setInterval(fetchGlobalScores, 2500);
 
         function submitGlobalScore(name, score) {
             if (!name || !score || score <= 0) return;
