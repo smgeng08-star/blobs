@@ -952,13 +952,15 @@
         }
     }
     function onWsClose() {
-        if (playerCells.length === 0) {
-            delay = 500;
-            showOverlays(1);
-        }
+        nodesOnScreen = [];
+        playerCells = [];
+        nodes = {};
+        nodelist = [];
+        Cells = [];
+        delay = 500;
+        showOverlays(1);
         wsReconnectTimer = setTimeout(showConnecting, delay);
         console.log("Socket closed");
-        delay *= 1.5;
     }
     function onWsMSG(msg) {
         handleWsMSG(new DataView(msg.data));
