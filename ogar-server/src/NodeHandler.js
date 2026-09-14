@@ -407,21 +407,33 @@ NodeHandler.prototype.ejectMass = function(client) {
         if (cell.mass < this.gameServer.config.playerMinMassEject ||
             cell.mass < this.gameServer.config.ejectMass) continue;
 
-        var angle = cell.position.angleTo(client.mouse);
-        if (isNaN(angle)) angle = Math.PI / 2;
-
-        // Get starting position (right at cell boundary, seamless emergence)
+        var isClassicOrExp = (this.gameServer.config.serverPort != 3002);
         var size = cell.getSize();
+
+        // 1:1 OgarII vector calculation to mouse
+        var dx = client.mouse.x - cell.position.x;
+        var dy = client.mouse.y - cell.position.y;
+        var d = Math.sqrt(dx * dx + dy * dy);
+        if (d < 1) {
+            dx = 1; dy = 0; d = 1;
+        } else {
+            dx /= d; dy /= d;
+        }
+
+        // Starting position right at cell boundary
         var startPos = new Vector(
-            cell.position.x - ((size) * Math.sin(angle)),
-            cell.position.y - ((size) * Math.cos(angle))
+            cell.position.x + (dx * size),
+            cell.position.y + (dy * size)
         );
 
         // Remove mass from parent cell
-        cell.mass -= this.gameServer.config.ejectMassLoss;
+        var massLoss = isClassicOrExp ? (this.gameServer.config.ejectMassLoss || 15) : (this.gameServer.config.ejectMassLoss || 0);
+        cell.mass -= massLoss;
 
-        // Randomize movement angle (Authentic Agar.io tight spread: +/- 3.4 degrees)
-        angle += (Math.random() * 0.12) - 0.06;
+        // 1:1 OgarII dispersion angle and boost speed (780 / 9 = 86.66)
+        var dispersion = isClassicOrExp ? 0.3 : 0.05;
+        var a = Math.atan2(dx, dy) - dispersion + (Math.random() * 2 * dispersion);
+        var boostSpeed = isClassicOrExp ? 86.66 : (this.gameServer.config.ejectSpeed || 100);
 
         // Create cell
         var ejected = new Entity.EjectedMass(
@@ -433,8 +445,8 @@ NodeHandler.prototype.ejectMass = function(client) {
         );
         ejected.sourceCellId = cell.nodeId; // Track which specific cell shot this mass
         ejected.moveEngine = new Vector(
-            Math.sin(angle) * this.gameServer.config.ejectSpeed,
-            Math.cos(angle) * this.gameServer.config.ejectSpeed
+            -Math.sin(a) * boostSpeed,
+            -Math.cos(a) * boostSpeed
         );
         ejected.setColor(cell.getColor());
 

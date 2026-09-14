@@ -8,6 +8,7 @@
     "install-deps": "cd ogar-server && npm install"
   },
   "dependencies": {
+    "ssh2": "^1.17.0",
     "ws": "^8.18.0"
   },
   "engines": {
