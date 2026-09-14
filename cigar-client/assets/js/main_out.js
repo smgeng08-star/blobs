@@ -942,6 +942,9 @@
         }
     }
     function onWsClose() {
+        if (playerCells.length === 0) {
+            showOverlays(1);
+        }
         setTimeout(showConnecting, delay);
         console.log("Socket closed");
         delay *= 1.5;
@@ -1899,6 +1902,11 @@
                     sendNickName();
                 }
             }, 350);
+            setTimeout(function() {
+                if (!hasOverlay && !wHandle.isSpectating && playerCells.length === 0) {
+                    showOverlays(1);
+                }
+            }, 1500);
         }
 
         if (typeof wHandle.playGameSound === 'function') {
