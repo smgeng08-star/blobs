@@ -181,14 +181,24 @@
     };
     wHandle.customPlayerSkinImg = null;
     wHandle.userSkinsCache = {};
+    wHandle.userSkinsLoading = {};
+
     wHandle.getUserSkinImage = function(rawName) {
         if (!rawName) return null;
         var name = rawName.trim();
         if (!name) return null;
         var lower = name.toLowerCase();
+
         if (wHandle.userSkinsCache[lower] !== undefined) {
-            return wHandle.userSkinsCache[lower];
+            var cached = wHandle.userSkinsCache[lower];
+            return (cached && cached.complete && cached.naturalWidth > 0) ? cached : null;
         }
+
+        if (wHandle.userSkinsLoading[lower]) {
+            return null; // Already queued to load
+        }
+        wHandle.userSkinsLoading[lower] = true;
+
         var skinSrc = null;
         try {
             var accounts = JSON.parse(localStorage.getItem('blobz_accounts') || '{}');
@@ -206,28 +216,29 @@
         var img = new Image();
         img.onload = function() {
             wHandle.userSkinsCache[lower] = img;
+            delete wHandle.userSkinsLoading[lower];
         };
         img.onerror = function() {
             wHandle.userSkinsCache[lower] = null;
+            delete wHandle.userSkinsLoading[lower];
         };
 
         if (skinSrc) {
             img.src = skinSrc;
-            wHandle.userSkinsCache[lower] = img;
-            return img;
+            return null; // Will return image on next frame once loaded
         }
 
-        // If not in local storage (e.g. guest or other browser), load from server
         var safeUser = lower.replace(/[^a-z0-9_-]/gi, '');
         if (safeUser) {
             img.src = '/skins/users/' + safeUser + '.png';
-            wHandle.userSkinsCache[lower] = img;
-            return img;
+            return null;
         }
 
         wHandle.userSkinsCache[lower] = null;
+        delete wHandle.userSkinsLoading[lower];
         return null;
     };
+
     wHandle.setCustomSkin = function(src) {
         if (!src) {
             wHandle.customPlayerSkinImg = null;
@@ -239,8 +250,10 @@
         img.onload = function() {
             wHandle.customPlayerSkinImg = img;
         };
+        img.onerror = function() {
+            wHandle.customPlayerSkinImg = null;
+        };
         img.src = src;
-        wHandle.customPlayerSkinImg = img;
     };
     try {
         var _savedSkin = localStorage.getItem('blobz_custom_skin');
@@ -2346,21 +2359,23 @@
                 if (isBlobsSkin) {
                     // Draw official Blobs.co.il skin with cell's dynamic color and player tag/name!
                     drawBlobsSkin(ctx, this.x, this.y, this.size, this.color, this.name);
-                } else if (skinImg) {
+                } else if (skinImg && skinImg.complete && skinImg.naturalWidth > 0) {
                     // Draw skin clipped to the circle with object-fit cover (no background bleeding!)
                     ctx.save();
                     ctx.clip();
                     var dw = 2 * this.size;
                     var dh = 2 * this.size;
-                    if (skinImg.width && skinImg.height) {
-                        var aspect = skinImg.width / skinImg.height;
-                        if (aspect > 1) {
-                            dw = dh * aspect;
-                        } else {
-                            dh = dw / aspect;
+                    try {
+                        if (skinImg.width && skinImg.height) {
+                            var aspect = skinImg.width / skinImg.height;
+                            if (aspect > 1) {
+                                dw = dh * aspect;
+                            } else {
+                                dh = dw / aspect;
+                            }
                         }
-                    }
-                    ctx.drawImage(skinImg, this.x - dw / 2, this.y - dh / 2, dw, dh);
+                        ctx.drawImage(skinImg, this.x - dw / 2, this.y - dh / 2, dw, dh);
+                    } catch(err){}
                     ctx.restore();
                     // Authentic Agar.io: No colored border on skins for a clean, borderless avatar
                 } else {
