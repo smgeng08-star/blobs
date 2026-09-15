@@ -237,7 +237,7 @@ var server = http.createServer(function(req, res) {
             try {
                 var data = JSON.parse(body || '{}');
                 if (data.name && typeof data.score === 'number' && data.score > 0) {
-                    var cleanName = data.name.trim().substr(0, 15);
+                    var cleanName = data.name.trim().substr(0, 20);
                     if (!(/^blobs#/i.test(cleanName) || cleanName === 'אורח' || cleanName === 'שחקן אנונימי')) {
                         var sc = getScores();
                         if (!sc[cleanName] || data.score > sc[cleanName]) {
