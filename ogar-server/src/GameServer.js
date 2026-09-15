@@ -75,9 +75,9 @@ function GameServer() {
         scrambleIDs: 1,
         scrambleColors: 0,
         borderLeft: 0, // Left border of map (Vanilla value: 0)
-        borderRight: 6000, // Right border of map (Vanilla value: 14142.135623730952)
+        borderRight: 11300, // Right border of map (Vanilla value: 14142.135623730952)
         borderTop: 0, // Top border of map (Vanilla value: 0)
-        borderBottom: 6000, // Bottom border of map (Vanilla value: 14142.135623730952)
+        borderBottom: 11300, // Bottom border of map (Vanilla value: 14142.135623730952)
         spawnInterval: 20, // The interval between each food cell spawn in ticks (1 tick = 50 ms)
         foodSpawnAmount: 10, // The amount of food to spawn per interval
         foodStartAmount: 100, // The starting amount of food in the map

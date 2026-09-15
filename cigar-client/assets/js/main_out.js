@@ -1579,8 +1579,8 @@
             ctx.stroke();
 
             // Player position calculations
-            var totalW = (maxX - minX) || 10000;
-            var totalH = (maxY - minY) || 10000;
+            var totalW = (maxX - minX) || 11300;
+            var totalH = (maxY - minY) || 11300;
             var normX = Math.max(0, Math.min(1, (nodeX - minX) / totalW));
             var normY = Math.max(0, Math.min(1, (nodeY - minY) / totalH));
             var dotX = mX + normX * mW;
