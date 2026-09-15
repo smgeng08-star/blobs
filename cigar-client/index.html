@@ -336,13 +336,43 @@
                         <input type="file" id="skinUploadInput" accept="image/*" style="display:none;" onchange="handleSkinUpload(event)">
                         
                         <!-- Actions Grid -->
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; width:100%;">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; width:100%; margin-bottom:10px;">
                             <button type="button" onclick="document.getElementById('skinUploadInput').click()" style="background:linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%); color:#ffffff; border:1px solid #0284c7; border-radius:8px; padding:9px 12px; font-size:13px; font-weight:800; cursor:pointer; box-shadow:0 3px 8px rgba(2,132,199,0.25); transition:all 0.15s ease;">
                                 העלאת תמונה
                             </button>
                             <button type="button" onclick="removeSkin()" style="background:#ffffff; color:#ef4444; border:1.5px solid #fecaca; border-radius:8px; padding:9px 12px; font-size:13px; font-weight:800; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.03); transition:all 0.15s ease;">
                                 איפוס
                             </button>
+                        </div>
+
+                        <!-- Change Password Toggle Button -->
+                        <button type="button" onclick="toggleChangePasswordBox()" style="width:100%; background:#f8fafc; color:#334155; border:1.5px solid #cbd5e1; border-radius:8px; padding:8px 12px; font-size:12.5px; font-weight:800; cursor:pointer; transition:all 0.15s ease; display:flex; align-items:center; justify-content:center; gap:6px;">
+                            <span>🔑</span> <span>שינוי סיסמה לחשבון</span>
+                        </button>
+
+                        <!-- Change Password Collapsible Box -->
+                        <div id="change-pass-container" style="display:none; width:100%; margin-top:10px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; padding:12px; text-align:right;">
+                            <div id="auth-alert-change-pass" style="display:none; padding:6px 10px; border-radius:6px; font-size:12px; font-weight:700; margin-bottom:8px; text-align:center;"></div>
+                            <div style="margin-bottom:8px;">
+                                <label style="display:block; font-size:11.5px; font-weight:800; color:#475569; margin-bottom:3px;">סיסמה נוכחית:</label>
+                                <input type="password" id="cp-old-password" placeholder="סיסמה נוכחית..." style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:6px 8px; font-size:12.5px; font-weight:700; direction:ltr;">
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <label style="display:block; font-size:11.5px; font-weight:800; color:#475569; margin-bottom:3px;">סיסמה חדשה (4 עד 20 תווים):</label>
+                                <input type="password" id="cp-new-password" placeholder="סיסמה חדשה..." style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:6px 8px; font-size:12.5px; font-weight:700; direction:ltr;">
+                            </div>
+                            <div style="margin-bottom:10px;">
+                                <label style="display:block; font-size:11.5px; font-weight:800; color:#475569; margin-bottom:3px;">אימות סיסמה חדשה:</label>
+                                <input type="password" id="cp-confirm-password" placeholder="אימות סיסמה..." style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:6px 8px; font-size:12.5px; font-weight:700; direction:ltr;">
+                            </div>
+                            <div style="display:flex; gap:6px;">
+                                <button type="button" onclick="submitChangePassword()" style="flex:1; background:linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%); color:#ffffff; border:none; border-radius:6px; padding:7px; font-size:12.5px; font-weight:800; cursor:pointer;">
+                                    שמור סיסמה
+                                </button>
+                                <button type="button" onclick="toggleChangePasswordBox()" style="background:#ffffff; color:#64748b; border:1px solid #cbd5e1; border-radius:6px; padding:7px 12px; font-size:12.5px; font-weight:800; cursor:pointer;">
+                                    ביטול
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -1362,6 +1392,83 @@
             })
             .catch(function(err) {
                 showLoginAlert('שגיאה בהתחברות לשרת', false);
+            });
+        function toggleChangePasswordBox() {
+            var box = document.getElementById('change-pass-container');
+            if (!box) return;
+            var isHidden = box.style.display === 'none';
+            box.style.display = isHidden ? 'block' : 'none';
+            var alertEl = document.getElementById('auth-alert-change-pass');
+            if (alertEl) alertEl.style.display = 'none';
+            if (isHidden) {
+                document.getElementById('cp-old-password').value = '';
+                document.getElementById('cp-new-password').value = '';
+                document.getElementById('cp-confirm-password').value = '';
+                document.getElementById('cp-old-password').focus();
+            }
+        }
+
+        function showChangePassAlert(msg, isSuccess) {
+            var el = document.getElementById('auth-alert-change-pass');
+            if (!el) return;
+            el.style.display = 'block';
+            el.innerText = msg;
+            if (isSuccess) {
+                el.style.background = '#dcfce7';
+                el.style.color = '#15803d';
+                el.style.border = '1px solid #86efac';
+            } else {
+                el.style.background = '#fee2e2';
+                el.style.color = '#b91c1c';
+                el.style.border = '1px solid #fca5a5';
+            }
+        }
+
+        function submitChangePassword() {
+            var loggedUser = (localStorage.getItem('blobz_logged_user') || '').trim();
+            if (!loggedUser) {
+                showChangePassAlert('עליך להיות מחובר כדי לשנות סיסמה!', false);
+                return;
+            }
+            var oldPass = document.getElementById('cp-old-password').value || '';
+            var newPass = document.getElementById('cp-new-password').value || '';
+            var confirmPass = document.getElementById('cp-confirm-password').value || '';
+
+            if (!oldPass) {
+                showChangePassAlert('נא להזין את הסיסמה הנוכחית!', false);
+                return;
+            }
+            if (!newPass || newPass.length < 4 || newPass.length > 20) {
+                showChangePassAlert('הסיסמה החדשה חייבת להכיל בין 4 ל-20 תווים!', false);
+                return;
+            }
+            if (newPass !== confirmPass) {
+                showChangePassAlert('אימות הסיסמה החדשה אינו תואם!', false);
+                return;
+            }
+
+            fetch('/api/change-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: loggedUser,
+                    oldPassword: oldPass,
+                    newPassword: newPass
+                })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.error) {
+                    showChangePassAlert(data.error, false);
+                    return;
+                }
+                showChangePassAlert('הסיסמה שונתה בהצלחה!', true);
+                setTimeout(function() {
+                    toggleChangePasswordBox();
+                }, 1200);
+            })
+            .catch(function() {
+                showChangePassAlert('שגיאה בתקשורת מול השרת!', false);
             });
         }
 

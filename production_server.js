@@ -162,6 +162,40 @@ var server = http.createServer(function(req, res) {
         return;
     }
 
+    // API: POST /api/change-password
+    if (reqUrl === '/api/change-password' && req.method === 'POST') {
+        var body = '';
+        req.on('data', function(c) { body += c; });
+        req.on('end', function() {
+            try {
+                var data = JSON.parse(body || '{}');
+                var u = (data.username || '').trim();
+                var oldPass = data.oldPassword || '';
+                var newPass = data.newPassword || '';
+                var lower = u.toLowerCase();
+                var accs = getAccounts();
+                if (!accs[lower] || (accs[lower].password && accs[lower].password !== oldPass)) {
+                    res.writeHead(401, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'הסיסמה הישנה שהוזנה אינה נכונה!' }));
+                    return;
+                }
+                if (!newPass || newPass.length < 4 || newPass.length > 20) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'הסיסמה החדשה חייבת להכיל בין 4 ל-20 תווים!' }));
+                    return;
+                }
+                accs[lower].password = newPass;
+                saveAccounts(accs);
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, message: 'הסיסמה שונתה בהצלחה!' }));
+            } catch(e) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: e.message }));
+            }
+        });
+        return;
+    }
+
     // API: GET /api/skins
     if (reqUrl === '/api/skins' && req.method === 'GET') {
         fs.readdir(SKINS_DIR, function(err, files) {
