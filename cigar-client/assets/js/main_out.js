@@ -2324,139 +2324,144 @@
                     for (var c = 0; c < this.points.length; c++) this.points[c].size = this.size;
                 this.wasSimpleDrawing = b;
                 ctx.save();
-                this.drawTime = timestamp;
-                c = this.updatePos();
-                this.destroyed && (ctx.globalAlpha *= 1 - c);
-                ctx.lineWidth = 10;
-                ctx.lineCap = "round";
-                ctx.lineJoin = this.isVirus ? "miter" : "round";
-                ctx.globalAlpha = transparentCells ? .5 : 1;
-                var cellName = (this.name || "").trim();
-                var skinName = cellName.toLowerCase();
-                if (skinName.indexOf('[') != -1) {
-                    var clanStart = skinName.indexOf('[');
-                    var clanEnd = skinName.indexOf(']');
-                    skinName = skinName.slice(clanStart + 1, clanEnd);
-                }
-                var isPlayer = (-1 != playerCells.indexOf(this));
-                var playerName = ((playerCells[0] && playerCells[0].name) || userNickName || ($("#nick").val() || "")).trim();
-                var isBotOrPlayer = isPlayer || (cellName && playerName && cellName.toLowerCase() === playerName.toLowerCase());
-
-                var isBlobsSkin = false;
-                var skinImg = null;
-                var userCustomImg = wHandle.getUserSkinImage(cellName) || (isBotOrPlayer && playerName ? wHandle.getUserSkinImage(playerName) : null);
-
-                if (!this.isVirus && showSkin && userCustomImg && userCustomImg.complete) {
-                    skinImg = userCustomImg;
-                } else if (isBotOrPlayer && wHandle.customPlayerSkinImg && wHandle.customPlayerSkinImg.complete && showSkin) {
-                    skinImg = wHandle.customPlayerSkinImg;
-                } else if (!this.isVirus && showSkin && (
-                    (cellName && cellName.toLowerCase().indexOf("blobs") === 0) ||
-                    (isBotOrPlayer && playerName && playerName.toLowerCase().indexOf("blobs") === 0)
-                )) {
-                    isBlobsSkin = true;
-                } else if (!this.isAgitated && showSkin && teamScores == null) {
-                    var lookupSkin = skinName;
-                    if (isBotOrPlayer && playerName) {
-                        var pSkin = playerName.toLowerCase();
-                        if (pSkin.indexOf('[') != -1) pSkin = pSkin.slice(pSkin.indexOf('[') + 1, pSkin.indexOf(']'));
-                        if (-1 != knownNameDict.indexOf(pSkin)) lookupSkin = pSkin;
+                try {
+                    this.drawTime = timestamp;
+                    c = this.updatePos();
+                    this.destroyed && (ctx.globalAlpha *= 1 - c);
+                    ctx.lineWidth = 10;
+                    ctx.lineCap = "round";
+                    ctx.lineJoin = this.isVirus ? "miter" : "round";
+                    ctx.globalAlpha = transparentCells ? .5 : 1;
+                    var cellName = (this.name || "").trim();
+                    var skinName = cellName.toLowerCase();
+                    if (skinName.indexOf('[') != -1) {
+                        var clanStart = skinName.indexOf('[');
+                        var clanEnd = skinName.indexOf(']');
+                        skinName = skinName.slice(clanStart + 1, clanEnd);
                     }
-                    if (-1 != knownNameDict.indexOf(lookupSkin)) {
-                        if (!skins[lookupSkin]) {
-                            skins[lookupSkin] = new Image;
-                            skins[lookupSkin].src = SKIN_URL + lookupSkin + '.png';
+                    var isPlayer = (-1 != playerCells.indexOf(this));
+                    var playerName = ((playerCells[0] && playerCells[0].name) || userNickName || ($("#nick").val() || "")).trim();
+                    var isBotOrPlayer = isPlayer || (cellName && playerName && cellName.toLowerCase() === playerName.toLowerCase());
+
+                    var isBlobsSkin = false;
+                    var skinImg = null;
+                    var userCustomImg = wHandle.getUserSkinImage(cellName) || (isBotOrPlayer && playerName ? wHandle.getUserSkinImage(playerName) : null);
+
+                    if (!this.isVirus && showSkin && userCustomImg && userCustomImg.complete) {
+                        skinImg = userCustomImg;
+                    } else if (isBotOrPlayer && wHandle.customPlayerSkinImg && wHandle.customPlayerSkinImg.complete && showSkin) {
+                        skinImg = wHandle.customPlayerSkinImg;
+                    } else if (!this.isVirus && showSkin && (
+                        (cellName && cellName.toLowerCase().indexOf("blobs") === 0) ||
+                        (isBotOrPlayer && playerName && playerName.toLowerCase().indexOf("blobs") === 0)
+                    )) {
+                        isBlobsSkin = true;
+                    } else if (!this.isAgitated && showSkin && teamScores == null) {
+                        var lookupSkin = skinName;
+                        if (isBotOrPlayer && playerName) {
+                            var pSkin = playerName.toLowerCase();
+                            if (pSkin.indexOf('[') != -1) pSkin = pSkin.slice(pSkin.indexOf('[') + 1, pSkin.indexOf(']'));
+                            if (-1 != knownNameDict.indexOf(pSkin)) lookupSkin = pSkin;
                         }
-                        if (skins[lookupSkin] && 0 != skins[lookupSkin].width && skins[lookupSkin].complete) {
-                            skinImg = skins[lookupSkin];
-                        }
-                    }
-                }
-
-                // If cell has a skin or is a regular player/bot cell, render as a clean stable circle
-                var useStableCircle = (skinImg != null) || isBlobsSkin || (!this.isVirus && smoothRender > 0);
-                ctx.beginPath();
-                if (useStableCircle) {
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
-                } else {
-                    this.movePoints();
-                    var d = this.getNumPoints();
-                    ctx.moveTo(this.points[0].x, this.points[0].y);
-                    for (c = 1; c <= d; ++c) {
-                        var pIdx = c % d;
-                        ctx.lineTo(this.points[pIdx].x, this.points[pIdx].y);
-                    }
-                }
-                ctx.closePath();
-
-                if (isBlobsSkin) {
-                    // Draw official Blobs.co.il skin with cell's dynamic color and player tag/name!
-                    drawBlobsSkin(ctx, this.x, this.y, this.size, this.color, this.name);
-                } else if (skinImg && skinImg.complete && skinImg.naturalWidth > 0) {
-                    // Draw skin clipped to the circle with object-fit cover (no background bleeding!)
-                    ctx.save();
-                    ctx.clip();
-                    var dw = 2 * this.size;
-                    var dh = 2 * this.size;
-                    try {
-                        if (skinImg.width && skinImg.height) {
-                            var aspect = skinImg.width / skinImg.height;
-                            if (aspect > 1) {
-                                dw = dh * aspect;
-                            } else {
-                                dh = dw / aspect;
+                        if (-1 != knownNameDict.indexOf(lookupSkin)) {
+                            if (!skins[lookupSkin]) {
+                                skins[lookupSkin] = new Image;
+                                skins[lookupSkin].src = SKIN_URL + lookupSkin + '.png';
+                            }
+                            if (skins[lookupSkin] && 0 != skins[lookupSkin].width && skins[lookupSkin].complete) {
+                                skinImg = skins[lookupSkin];
                             }
                         }
-                        ctx.drawImage(skinImg, this.x - dw / 2, this.y - dh / 2, dw, dh);
-                    } catch(err){}
-                    ctx.restore();
-                    // Authentic Agar.io: No colored border on skins for a clean, borderless avatar
-                } else {
-                    // No skin: fill with cell color and stroke
-                    ctx.fillStyle = showColor ? "#FFF" : this.color;
-                    ctx.fill();
-                    if (showCellBorder && this.size >= 15) {
-                        ctx.lineWidth = Math.max(3, ~~(this.size * 0.04));
-                        ctx.strokeStyle = showColor ? "#AAA" : this.color;
-                        ctx.stroke();
                     }
-                }
-                ctx.globalAlpha = 1;
-                var e = skinImg;
-                c = -1 != playerCells.indexOf(this);
-                var ncache;
-                // Draw name and score text
-                if (0 != this.id) {
-                    var b = ~~this.y;
-                    var skipName = isBlobsSkin;
-                    if (!skipName && (showName || c) && this.name && this.nameCache && (null == e || -1 == knownNameDict_noDisp.indexOf(skinName))) {
-                        ncache = this.nameCache;
-                        ncache.setValue(this.name);
-                        ncache.setSize(this.getNameSize());
-                        var ratio = Math.ceil(10 * viewZoom) / 10;
-                        ncache.setScale(ratio);
-                        var rnchache = ncache.render(),
-                            w = ~~(rnchache.width / ratio),
-                            h = ~~(rnchache.height / ratio);
-                        ctx.drawImage(rnchache, ~~this.x - ~~(w / 2), b - ~~(h / 2), w, h);
-                        b += rnchache.height / 2 / ratio + 4;
-                    }
-                    if (showMass && (c || 0 == playerCells.length && (!this.isVirus || this.isAgitated) && 20 < this.size)) {
-                        if (null == this.sizeCache) {
-                            this.sizeCache = new UText(Math.max(12, this.getNameSize() / 2), "#FFF", 1, "#000");
+
+                    // If cell has a skin or is a regular player/bot cell, render as a clean stable circle
+                    var useStableCircle = (skinImg != null) || isBlobsSkin || (!this.isVirus && smoothRender > 0);
+                    ctx.beginPath();
+                    if (useStableCircle) {
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                    } else {
+                        this.movePoints();
+                        var d = this.getNumPoints();
+                        ctx.moveTo(this.points[0].x, this.points[0].y);
+                        for (c = 1; c <= d; ++c) {
+                            var pIdx = c % d;
+                            ctx.lineTo(this.points[pIdx].x, this.points[pIdx].y);
                         }
-                        c = this.sizeCache;
-                        c.setSize(Math.max(12, this.getNameSize() / 2));
-                        c.setValue(~~(this.size * this.size / 100));
-                        ratio = Math.ceil(10 * viewZoom) / 10;
-                        c.setScale(ratio);
-                        e = c.render();
-                        w = ~~(e.width / ratio);
-                        h = ~~(e.height / ratio);
-                        var massY = isBlobsSkin ? (~~this.y + ~~(this.size * 0.42)) : b;
-                        ctx.drawImage(e, ~~this.x - ~~(w / 2), massY - ~~(h / 2), w, h);
                     }
-                }
+                    ctx.closePath();
+
+                    if (isBlobsSkin) {
+                        // Draw official Blobs.co.il skin with cell's dynamic color and player tag/name!
+                        drawBlobsSkin(ctx, this.x, this.y, this.size, this.color, this.name);
+                    } else if (skinImg && skinImg.complete && skinImg.naturalWidth > 0) {
+                        // Draw skin clipped to the circle with object-fit cover (no background bleeding!)
+                        ctx.save();
+                        ctx.clip();
+                        var dw = 2 * this.size;
+                        var dh = 2 * this.size;
+                        try {
+                            if (skinImg.width && skinImg.height) {
+                                var aspect = skinImg.width / skinImg.height;
+                                if (aspect > 1) {
+                                    dw = dh * aspect;
+                                } else {
+                                    dh = dw / aspect;
+                                }
+                            }
+                            ctx.drawImage(skinImg, this.x - dw / 2, this.y - dh / 2, dw, dh);
+                        } catch(err){}
+                        ctx.restore();
+                    } else {
+                        // No skin: fill with cell color and stroke
+                        ctx.fillStyle = showColor ? "#FFF" : this.color;
+                        ctx.fill();
+                        if (showCellBorder && this.size >= 15) {
+                            ctx.lineWidth = Math.max(3, ~~(this.size * 0.04));
+                            ctx.strokeStyle = showColor ? "#AAA" : this.color;
+                            ctx.stroke();
+                        }
+                    }
+                    ctx.globalAlpha = 1;
+                    var e = skinImg;
+                    c = -1 != playerCells.indexOf(this);
+                    var ncache;
+                    // Draw name and score text
+                    if (0 != this.id) {
+                        var b = ~~this.y;
+                        var skipName = isBlobsSkin;
+                        if (!skipName && (showName || c) && this.name && this.nameCache && (null == e || -1 == knownNameDict_noDisp.indexOf(skinName))) {
+                            ncache = this.nameCache;
+                            ncache.setValue(this.name);
+                            ncache.setSize(this.getNameSize());
+                            var ratio = Math.ceil(10 * viewZoom) / 10;
+                            ncache.setScale(ratio);
+                            var rnchache = ncache.render();
+                            if (rnchache && rnchache.width > 0 && rnchache.height > 0) {
+                                var w = ~~(rnchache.width / ratio),
+                                    h = ~~(rnchache.height / ratio);
+                                ctx.drawImage(rnchache, ~~this.x - ~~(w / 2), b - ~~(h / 2), w, h);
+                                b += rnchache.height / 2 / ratio + 4;
+                            }
+                        }
+                        if (showMass && (c || 0 == playerCells.length && (!this.isVirus || this.isAgitated) && 20 < this.size)) {
+                            if (null == this.sizeCache) {
+                                this.sizeCache = new UText(Math.max(12, this.getNameSize() / 2), "#FFF", 1, "#000");
+                            }
+                            c = this.sizeCache;
+                            c.setSize(Math.max(12, this.getNameSize() / 2));
+                            c.setValue(~~(this.size * this.size / 100));
+                            ratio = Math.ceil(10 * viewZoom) / 10;
+                            c.setScale(ratio);
+                            e = c.render();
+                            if (e && e.width > 0 && e.height > 0) {
+                                w = ~~(e.width / ratio);
+                                h = ~~(e.height / ratio);
+                                var massY = isBlobsSkin ? (~~this.y + ~~(this.size * 0.42)) : b;
+                                ctx.drawImage(e, ~~this.x - ~~(w / 2), massY - ~~(h / 2), w, h);
+                            }
+                        }
+                    }
+                } catch(renderErr) {}
                 ctx.restore();
             }
         }
@@ -2473,13 +2478,13 @@
         _scale: 1,
         setSize: function(a) {
             if (this._size != a) {
-                this._size = a;
+                this._size = Math.max(1, a);
                 this._dirty = 1;
             }
         },
         setScale: function(a) {
             if (this._scale != a) {
-                this._scale = a;
+                this._scale = Math.max(0.1, a);
                 this._dirty = 1;
             }
         },
@@ -2504,14 +2509,18 @@
                 this._dirty = 0;
                 var canvas = this._canvas,
                     ctx = this._ctx,
-                    value = this._value,
-                    scale = this._scale,
-                    fontsize = this._size,
+                    value = String(this._value || ""),
+                    scale = Math.max(0.1, this._scale || 1),
+                    fontsize = Math.max(1, this._size || 16),
                     font = 'bold ' + fontsize + 'px Rubik, Assistant, Ubuntu, sans-serif';
                 ctx.font = font;
+                var textMetrics = ctx.measureText(value);
+                var textW = textMetrics ? textMetrics.width : 50;
                 var h = ~~(.2 * fontsize);
-                canvas.width = (ctx.measureText(value).width + 6) * scale;
-                canvas.height = (fontsize + h) * scale;
+                var targetW = Math.max(1, Math.ceil((textW + 6) * scale));
+                var targetH = Math.max(1, Math.ceil((fontsize + h) * scale));
+                canvas.width = targetW;
+                canvas.height = targetH;
                 ctx.font = font;
                 ctx.scale(scale, scale);
                 ctx.globalAlpha = 1;
@@ -2526,11 +2535,11 @@
             return this._canvas;
         },
         getWidth: function() {
-            if (this._canvas) return (this._canvas.width / (this._scale || 1));
+            if (this._canvas && this._canvas.width > 0) return (this._canvas.width / (this._scale || 1));
             var tempCanvas = document.createElement("canvas");
             var tempCtx = tempCanvas.getContext("2d");
-            tempCtx.font = 'bold ' + this._size + 'px Rubik, Assistant, Ubuntu, sans-serif';
-            return (tempCtx.measureText(this._value).width + 6);
+            tempCtx.font = 'bold ' + (this._size || 16) + 'px Rubik, Assistant, Ubuntu, sans-serif';
+            return (tempCtx.measureText(String(this._value || "")).width + 6);
         }
     };
     Date.now || (Date.now = function() {
