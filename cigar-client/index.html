@@ -355,15 +355,15 @@
                             <div id="auth-alert-change-pass" style="display:none; padding:6px 10px; border-radius:6px; font-size:12px; font-weight:700; margin-bottom:8px; text-align:center;"></div>
                             <div style="margin-bottom:8px;">
                                 <label style="display:block; font-size:11.5px; font-weight:800; color:#475569; margin-bottom:3px;">סיסמה נוכחית:</label>
-                                <input type="password" id="cp-old-password" placeholder="סיסמה נוכחית..." style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:6px 8px; font-size:12.5px; font-weight:700; direction:ltr;">
+                                <input type="password" id="cp-old-password" maxlength="12" placeholder="סיסמה נוכחית..." style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:6px 8px; font-size:12.5px; font-weight:700; direction:ltr;">
                             </div>
                             <div style="margin-bottom:8px;">
-                                <label style="display:block; font-size:11.5px; font-weight:800; color:#475569; margin-bottom:3px;">סיסמה חדשה (4 עד 20 תווים):</label>
-                                <input type="password" id="cp-new-password" placeholder="סיסמה חדשה..." style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:6px 8px; font-size:12.5px; font-weight:700; direction:ltr;">
+                                <label style="display:block; font-size:11.5px; font-weight:800; color:#475569; margin-bottom:3px;">סיסמה חדשה (מ-4 עד 12 תווים):</label>
+                                <input type="password" id="cp-new-password" minlength="4" maxlength="12" placeholder="סיסמה חדשה..." style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:6px 8px; font-size:12.5px; font-weight:700; direction:ltr;">
                             </div>
                             <div style="margin-bottom:10px;">
                                 <label style="display:block; font-size:11.5px; font-weight:800; color:#475569; margin-bottom:3px;">אימות סיסמה חדשה:</label>
-                                <input type="password" id="cp-confirm-password" placeholder="אימות סיסמה..." style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:6px 8px; font-size:12.5px; font-weight:700; direction:ltr;">
+                                <input type="password" id="cp-confirm-password" minlength="4" maxlength="12" placeholder="אימות סיסמה..." style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:6px 8px; font-size:12.5px; font-weight:700; direction:ltr;">
                             </div>
                             <div style="display:flex; gap:6px;">
                                 <button type="button" onclick="submitChangePassword()" style="flex:1; background:linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%); color:#ffffff; border:none; border-radius:6px; padding:7px; font-size:12.5px; font-weight:800; cursor:pointer;">
@@ -1440,8 +1440,8 @@
                 showChangePassAlert('נא להזין את הסיסמה הנוכחית!', false);
                 return;
             }
-            if (!newPass || newPass.length < 4 || newPass.length > 20) {
-                showChangePassAlert('הסיסמה החדשה חייבת להכיל בין 4 ל-20 תווים!', false);
+            if (!newPass || newPass.length < 4 || newPass.length > 12) {
+                showChangePassAlert('הסיסמה החדשה חייבת להכיל בין 4 ל-12 תווים!', false);
                 return;
             }
             if (newPass !== confirmPass) {

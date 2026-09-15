@@ -179,9 +179,9 @@ var server = http.createServer(function(req, res) {
                     res.end(JSON.stringify({ error: 'הסיסמה הישנה שהוזנה אינה נכונה!' }));
                     return;
                 }
-                if (!newPass || newPass.length < 4 || newPass.length > 20) {
+                if (!newPass || newPass.length < 4 || newPass.length > 12) {
                     res.writeHead(400, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ error: 'הסיסמה החדשה חייבת להכיל בין 4 ל-20 תווים!' }));
+                    res.end(JSON.stringify({ error: 'הסיסמה החדשה חייבת להכיל בין 4 ל-12 תווים!' }));
                     return;
                 }
                 accs[lower].password = newPass;
