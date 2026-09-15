@@ -211,8 +211,9 @@ PacketHandler.prototype.handleMessage = function(message) {
                                 }
                             }
                             break;
-                        case 8: // Spawn 10 Bots
-                            for (var b = 0; b < 10; b++) {
+                        case 8: // Spawn World Bots (Default 5)
+                            var spawnCount = p1 > 0 ? p1 : 5;
+                            for (var b = 0; b < spawnCount; b++) {
                                 this.gameServer.bots.addBot();
                             }
                             break;

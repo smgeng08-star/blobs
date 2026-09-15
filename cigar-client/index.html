@@ -584,8 +584,8 @@
                 <button type="button" onclick="adminSpawnMother()" style="background:#1e293b; border:1px solid #475569; color:#ef4444; border-radius:6px; padding:7px; font-size:12px; font-weight:800; cursor:pointer;">
                     🔴 שגר וירוס אדום (Mother)
                 </button>
-                <button type="button" onclick="adminSpawnBots(10)" style="background:#1e293b; border:1px solid #475569; color:#f8fafc; border-radius:6px; padding:7px; font-size:12px; font-weight:800; cursor:pointer;">
-                    🤖 הוסף 10 בוטים עולם
+                <button type="button" onclick="adminSpawnBots(5)" style="background:#1e293b; border:1px solid #475569; color:#f8fafc; border-radius:6px; padding:7px; font-size:12px; font-weight:800; cursor:pointer;">
+                    🤖 הוסף 5 בוטים עולם
                 </button>
                 <button type="button" onclick="adminKillAllBots()" style="background:#1e293b; border:1px solid #ef4444; color:#fca5a5; border-radius:6px; padding:7px; font-size:12px; font-weight:800; cursor:pointer;">
                     ❌ מחיקת כל הבוטים
@@ -844,7 +844,7 @@
 
         function adminSpawnBots(count) {
             if (typeof window.sendAdminAction === 'function') {
-                window.sendAdminAction(8, count || 10);
+                window.sendAdminAction(8, count || 5);
             }
         }
 
