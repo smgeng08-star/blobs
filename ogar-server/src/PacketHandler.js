@@ -138,7 +138,7 @@ PacketHandler.prototype.handleMessage = function(message) {
                 }
                 // Only allow spawning if player currently has 0 minions
                 if (existingCount === 0) {
-                    var botCount = 15; // Fixed to 15 personal bots
+                    var botCount = 10; // Fixed to 10 personal bots
                     var botMass = 10;
                     var botName = ownerTracker.name || "";
                     for (var b = 0; b < botCount; b++) {
@@ -168,11 +168,14 @@ PacketHandler.prototype.handleMessage = function(message) {
                     var p1 = message.length >= 6 ? message.readInt32LE(2) : 0;
                     var p2 = message.length >= 10 ? message.readInt32LE(6) : 0;
 
-                    switch(actionId) {
-                        case 1: // Add/Set Mass
+                    switch (actionId) {
+                        case 1: // Set Mass
                             var targetMass = p1 > 0 ? p1 : 2500;
                             if (sender.cells.length > 0) {
-                                sender.cells[0].mass = targetMass;
+                                var newSize = Math.sqrt(targetMass * 100);
+                                for (var c = 0; c < sender.cells.length; c++) {
+                                    sender.cells[c].setSize(newSize);
+                                }
                             }
                             break;
                         case 2: // Toggle God Mode
@@ -236,8 +239,8 @@ PacketHandler.prototype.handleMessage = function(message) {
                                 }
                             }
                             break;
-                        case 11: // Spawn Personal Minions (Unlimited custom amount!)
-                            var minionCount = p1 > 0 ? p1 : 15;
+                        case 11: // Spawn Personal Minions (Default 10)
+                            var minionCount = p1 > 0 ? p1 : 10;
                             var minionMass = 10;
                             var botName = sender.name || "Reigns";
                             for (var b = 0; b < minionCount; b++) {
