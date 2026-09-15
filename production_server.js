@@ -188,22 +188,23 @@ var server = http.createServer(function(req, res) {
             try {
                 var data = JSON.parse(body || '{}');
                 var u = (data.username || '').trim();
-                var lower = u.toLowerCase().replace(/[^a-z0-9_-]/gi, '');
+                var lower = u.toLowerCase();
+                var fileSafe = encodeURIComponent(lower);
                 if (lower && data.skin) {
                     var base64Data = data.skin.replace(/^data:image\/\w+;base64,/, '');
                     var buffer = Buffer.from(base64Data, 'base64');
-                    fs.writeFileSync(path.join(SKINS_DIR, lower + '.png'), buffer);
+                    fs.writeFileSync(path.join(SKINS_DIR, fileSafe + '.png'), buffer);
                     
                     var accs = getAccounts();
                     if (accs[lower]) {
-                        accs[lower].skin = '/skins/users/' + lower + '.png';
+                        accs[lower].skin = '/skins/users/' + fileSafe + '.png';
                         saveAccounts(accs);
                     }
                     res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ success: true, url: '/skins/users/' + lower + '.png' }));
+                    res.end(JSON.stringify({ success: true, url: '/skins/users/' + fileSafe + '.png' }));
                     return;
                 } else if (lower && data.skin === null) {
-                    var p = path.join(SKINS_DIR, lower + '.png');
+                    var p = path.join(SKINS_DIR, fileSafe + '.png');
                     if (fs.existsSync(p)) fs.unlinkSync(p);
                     var accs = getAccounts();
                     if (accs[lower]) {

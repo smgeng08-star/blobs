@@ -182,6 +182,7 @@
     wHandle.customPlayerSkinImg = null;
     wHandle.userSkinsCache = {};
     wHandle.userSkinsLoading = {};
+    wHandle.userSkinsFailTime = {};
 
     wHandle.getUserSkinImage = function(rawName) {
         if (!rawName) return null;
@@ -191,7 +192,13 @@
 
         if (wHandle.userSkinsCache[lower] !== undefined) {
             var cached = wHandle.userSkinsCache[lower];
-            return (cached && cached.complete && cached.naturalWidth > 0) ? cached : null;
+            if (cached && cached.complete && cached.naturalWidth > 0) return cached;
+            if (cached === null) {
+                // If it previously failed or was null, allow retrying every 5 seconds
+                var failTime = wHandle.userSkinsFailTime[lower] || 0;
+                if (Date.now() - failTime < 5000) return null;
+                delete wHandle.userSkinsCache[lower];
+            }
         }
 
         if (wHandle.userSkinsLoading[lower]) {
@@ -203,7 +210,7 @@
         try {
             var accounts = JSON.parse(localStorage.getItem('blobz_accounts') || '{}');
             for (var acc in accounts) {
-                if (acc.toLowerCase() === lower && accounts[acc].skin) {
+                if (acc.toLowerCase() === lower && accounts[acc] && accounts[acc].skin) {
                     skinSrc = accounts[acc].skin;
                     break;
                 }
@@ -213,30 +220,32 @@
             }
         } catch(e){}
 
+        var safeUser = encodeURIComponent(lower);
+        var targetSrc = skinSrc || ('/skins/users/' + safeUser + '.png');
+
         var img = new Image();
         img.onload = function() {
             wHandle.userSkinsCache[lower] = img;
             delete wHandle.userSkinsLoading[lower];
+            delete wHandle.userSkinsFailTime[lower];
         };
         img.onerror = function() {
             wHandle.userSkinsCache[lower] = null;
+            wHandle.userSkinsFailTime[lower] = Date.now();
             delete wHandle.userSkinsLoading[lower];
         };
-
-        if (skinSrc) {
-            img.src = skinSrc;
-            return null; // Will return image on next frame once loaded
-        }
-
-        var safeUser = lower.replace(/[^a-z0-9_-]/gi, '');
-        if (safeUser) {
-            img.src = '/skins/users/' + safeUser + '.png';
-            return null;
-        }
-
-        wHandle.userSkinsCache[lower] = null;
-        delete wHandle.userSkinsLoading[lower];
+        img.src = targetSrc;
         return null;
+    };
+
+    wHandle.reloadUserSkins = function() {
+        // Clear caches so updated skins load live without page refresh
+        wHandle.userSkinsFailTime = {};
+        for (var k in wHandle.userSkinsCache) {
+            if (wHandle.userSkinsCache[k] === null) {
+                delete wHandle.userSkinsCache[k];
+            }
+        }
     };
 
     wHandle.setCustomSkin = function(src) {

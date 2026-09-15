@@ -1527,20 +1527,27 @@
                 } catch(e){}
                 updateSoundVol(savedVol);
 
-                // Load registered accounts and logged in state from server
-                fetch('/api/accounts')
-                    .then(function(r) { return r.json(); })
-                    .then(function(serverAccs) {
-                        if (serverAccs) {
-                            try {
-                                var localAccs = JSON.parse(localStorage.getItem('blobz_accounts') || '{}');
-                                var merged = Object.assign({}, localAccs, serverAccs);
-                                localStorage.setItem('blobz_accounts', JSON.stringify(merged));
-                            } catch(e){}
-                            updateAuthUI();
-                        }
-                    })
-                    .catch(function(){});
+                // Function to fetch accounts and skins live from server without page refresh
+                function syncAccountsAndSkins() {
+                    fetch('/api/accounts')
+                        .then(function(r) { return r.json(); })
+                        .then(function(serverAccs) {
+                            if (serverAccs) {
+                                try {
+                                    var localAccs = JSON.parse(localStorage.getItem('blobz_accounts') || '{}');
+                                    var merged = Object.assign({}, localAccs, serverAccs);
+                                    localStorage.setItem('blobz_accounts', JSON.stringify(merged));
+                                    if (typeof window.reloadUserSkins === 'function') {
+                                        window.reloadUserSkins();
+                                    }
+                                } catch(e){}
+                            }
+                        })
+                        .catch(function(){});
+                }
+
+                syncAccountsAndSkins();
+                setInterval(syncAccountsAndSkins, 4000);
 
                 // Sync current user skin to server on load so other browsers/guests see it
                 var loggedUser = localStorage.getItem('blobz_logged_user');
